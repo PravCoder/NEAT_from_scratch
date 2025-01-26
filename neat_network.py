@@ -12,6 +12,7 @@ class NeatNeuralNetwork:
         self.initializer = initializer
         if self.seed_individual == True: self.initialize_weights()
         self.connections = {} # {node-id: [connected from nodes]}, {target: [source-ids]}, {'3': ['1_IN1'], '4': ['1_IN2', '2_IN3'], '6': ['5_IN4'], '7': ['2_IN5']}, has the from-source node and innovation number of that connection in the value of each target node key
+        self.max_IN = self.update_max_IN()
 
     def initialize_weights(self):
         num_weights = len(self.innovation_nums.keys())
@@ -53,6 +54,10 @@ class NeatNeuralNetwork:
 
         print(f"Connections: {self.connections}")
         return self.connections
+    
+    def update_max_IN(self):
+        self.max_IN = max(list(self.innovation_nums.keys()))
+        return self.max_IN
 
 def main():
     input_nodes = 2
