@@ -4,14 +4,13 @@ import re
 
 class NeatNeuralNetwork: 
 
-    def __init__(self, innovation_nums, input_nodes, output_nodes, weights={}, bias_node_connections={}, seed_individual=False, initializer=None):  # representation of a genome
+    def __init__(self, innovation_nums, input_nodes, output_nodes, bias_node_id, weights={}, seed_individual=False, initializer=None):  # representation of a genome
         self.innovation_nums = innovation_nums
         self.input_nodes = input_nodes  # ids of input/output nodes
         self.output_nodes = output_nodes
         self.all_nodes = [] # ids of all nodes in network including input/output/bias-node
         self.weights = weights
-        self.bias_node_connections = bias_node_connections
-        self.bias_node_id = 0
+        self.bias_node_id = bias_node_id
         self.seed_individual = seed_individual
         self.initializer = initializer
         if self.seed_individual == True: self.initialize_weights()
@@ -59,7 +58,6 @@ class NeatNeuralNetwork:
                 continue
 
             source, target =  int(connection_str.split("->")[0]), int(connection_str.split("->")[1])
-
             if source not in self.all_nodes: self.all_nodes.append(int(source))
             if target not in self.all_nodes: self.all_nodes.append(int(target))
 
@@ -69,12 +67,9 @@ class NeatNeuralNetwork:
             elif int(target) in list(self.connections.keys()):
                 self.connections[int(target)].append(source_str)
 
+
         print(f"Connections: {self.connections}\n")  # contains only hidden/output nodes
-        # if there are some connection of the bias node (not empty), then get teh first one as a sample adn add bias-node-id to all-nodes-list
-        if self.bias_node_connections:
-            bias_source, bias_target =  int(list(self.bias_node_connections.values())[0].split("->")[0]), int(list(self.bias_node_connections.values())[0].split("->")[1])
-            self.bias_node_id = int(bias_source)
-            self.all_nodes.append(bias_source)
+        print(f"all_nodes: {self.all_nodes}")
         return self.connections
     
     def update_max_IN(self):
@@ -107,7 +102,7 @@ class NeatNeuralNetwork:
         ordered_nodes = self.input_nodes.copy()
         processed = set(self.input_nodes)
         
-        if self.bias_node_id:
+        if self.bias_node_id != -1:
             ordered_nodes.append(self.bias_node_id)
             processed.add(self.bias_node_id)
         
@@ -120,33 +115,43 @@ class NeatNeuralNetwork:
         
         return ordered_nodes
     
+    def extract_connection_str(self, connec_str):
+        source, target =  int(connec_str.split("->")[0]), int(connec_str.split("->")[1])
+        return source, target
+    
     def forward_propagation(self, X): # [x1, x2, x3,..] every element of x in input node value
+
         # topologicaly sorted node-ids to prevent trying to acess activation of a source node to compute cur-node acitvation, when we havent computed activation of that source-node yet
         top_sorted_nodes = self.get_topological_order()  
+        print(f"all_nodes: {self.all_nodes}")
         print(f"All_nodes_topological: {top_sorted_nodes}")
+
         for cur_node in top_sorted_nodes:   # iterate every node
             anomalies = [] # bias nodes & nodes that dont have a connection to them, want to exlcude them in below Z,A computations because they have a predefined output
-            if cur_node not in list(self.connections.keys()) and cur_node not in self.input_nodes: # if cur-node doesnt have any connections to it, then it outputs 0
+            # if its not a bias target and doesnt have any connections its output is 0
+            if cur_node not in list(self.connections.keys()) and cur_node not in self.input_nodes and cur_node != self.bias_node_id: # if cur-node doesnt have any connections to it, then it outputs 0
+                print(f"cur-node doesnt have connections: {cur_node}")
                 self.Z[cur_node] = 0
                 self.A[cur_node] = self.relu(self.Z[cur_node])
                 anomalies.append(cur_node)
-            if cur_node == self.bias_node_id:
+            if cur_node == self.bias_node_id: # handle activation/Z of bias node it self (its connections are done above)
                 self.Z[cur_node] = 1
                 self.A[cur_node] = 1
                 anomalies.append(cur_node)
             print(f"anomalies: {anomalies}")
 
-            if cur_node not in self.input_nodes:  # if it is not a input node compute forward  and it doesnt have any connections to it (its out will be zero)
+            if cur_node not in self.input_nodes and cur_node != self.bias_node_id:  # if it is not a input node compute forward  and it doesnt have any connections to it (its out will be zero)
                 print(f"Cur-node: {cur_node}")
                 if cur_node in self.connections: 
                     source_list = self.connections[cur_node] # get list of connections for cur-node only if it has connections
                 else:
                     continue
-                for source_str in source_list:   # iterate every source-str "1_1N2" for cur-node
+                for source_str in source_list:   # iterate every source-str "1_1N2" for cur-node, every connection of cur-node
                     pattern = r"(\d+)_IN(\d+)"
                     match = re.match(pattern, source_str)
                     source_node = int(match.group(1))  
                     print(f"Source-node: {source_node}") # the cur-nodes sources
+                    print(f"A={self.A}, Z={self.Z}")
                     innovation_number = int(match.group(2)) 
 
                     # if cur-node is not bias node and is not a node that doesnt have any connections to it
@@ -161,9 +166,10 @@ class NeatNeuralNetwork:
                                 self.Z[cur_node] = self.A[source_node] * self.weights[innovation_number]  # activation-source-node * weight connecting source to cur-node
                                 #self.A[cur_node] = self.softmax(self.Z[cur_node]) * self.weights[innovation_number]
                             else:       # its hidden node
+                                print(self.weights[innovation_number])
                                 self.Z[cur_node] = self.A[source_node] * self.weights[innovation_number]
                                 self.A[cur_node] = self.relu(self.Z[cur_node]) * self.weights[innovation_number]
-
+    
         # handle activation of output nodes for softmax
         output_Z_vector = [] # each element is weighted sum of that output-node
         for cur_node in self.output_nodes:   # iterate each output-node in order
@@ -181,10 +187,9 @@ def main():
     input_nodes = [1, 2]
     output_nodes = [6, 7]  # order of output-nodes in output_A_vector
 
-    IN = {1:"1->3", 2:"1->4", 4:"5->6" , 5:"2->7", 3:"2->4"}  # each connection-str it is source-node-id->target-node-id
-    bias_node_connections = {6: "8->5"}  # bias node can have multiple connections to different nodes
+    IN = {1:"1->3", 2:"1->4", 4:"5->6" , 5:"2->7", 3:"2->4", 6: "8->5"}  # each connection-str it is source-node-id->target-node-id # bias node can have multiple connections to different nodes, IN: source-target
     
-    n1 = NeatNeuralNetwork(innovation_nums=IN, input_nodes=input_nodes,output_nodes=output_nodes, bias_node_connections=bias_node_connections, seed_individual=True, initializer="glorot_normal")
+    n1 = NeatNeuralNetwork(innovation_nums=IN, input_nodes=input_nodes,output_nodes=output_nodes, bias_node_id=8, seed_individual=True, initializer="glorot_normal")
     n1.forward_propagation([1, 2])
 
 main()  # uncomment when importating from other file to avoid run

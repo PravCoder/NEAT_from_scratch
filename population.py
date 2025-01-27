@@ -39,19 +39,16 @@ def main():
 
     print("N1 FORWARD PROP")
     IN1 = {1:"1->4",2:"2->4D",3:"3->4",4:"2->5",5:"5->4",8:"1->5"}
-    bias_node_connections = {} # no bias nodes
     n1 = NeatNeuralNetwork(innovation_nums=IN1, input_nodes=[1,2,3],
-                           output_nodes=[4], bias_node_connections=bias_node_connections, 
+                           output_nodes=[4], bias_node_id=-1, 
                            seed_individual=True, initializer="glorot_normal")
     n1.forward_propagation([0.1, 0.2, 0.3])  # out always 1 because of sigmoid
 
 
-
     print("N2 FORWARD PROP")
     IN2 = {1:"1->4",2:"2->4D",3:"3->4",4:"2->5",5:"5->4D",6:"5->6",7:"6->4",9:"3->5",10:"1->6"}
-    bias_node_connections = {} # no bias nodes
     n2 = NeatNeuralNetwork(innovation_nums=IN2, input_nodes=[1,2,3],
-                           output_nodes=[4], bias_node_connections=bias_node_connections, 
+                           output_nodes=[4], bias_node_id=-1, 
                            seed_individual=True, initializer="glorot_normal")
     n2.forward_propagation([0.1, 0.2, 0.3])
 
