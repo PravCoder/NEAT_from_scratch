@@ -4,7 +4,7 @@ import re
 
 class NeatNeuralNetwork: 
 
-    def __init__(self, innovation_nums, input_nodes, output_nodes, weights={}, bias_node_connections={}, seed_individual=False, initializer=None):  # represents a genome
+    def __init__(self, innovation_nums, input_nodes, output_nodes, weights={}, bias_node_connections={}, seed_individual=False, initializer=None):  # representation of a genome
         self.innovation_nums = innovation_nums
         self.input_nodes = input_nodes  # ids of input/output nodes
         self.output_nodes = output_nodes
@@ -20,6 +20,9 @@ class NeatNeuralNetwork:
         self.max_IN = self.update_max_IN()
         self.Z = {}  # {node-id: weight-sum-scalar}
         self.A = {}  # {node-id: activated-sum}
+        self.fitness = 0
+        self.prepare_network()
+
 
     def initialize_weights(self):
         num_weights = len(self.innovation_nums.keys())
@@ -41,7 +44,7 @@ class NeatNeuralNetwork:
         for i, in_num in enumerate(list(self.innovation_nums.keys())):
             self.weights[in_num] = distribution[i]
 
-        print(f"Initalized weights: {self.weights}")
+        print(f"Initalized weights: {self.weights}\n")
         return self.weights
     
     """
@@ -51,6 +54,9 @@ class NeatNeuralNetwork:
     """
     def prepare_network(self):
         for in_num, connection_str in list(self.innovation_nums.items()):
+
+            if "D" in connection_str: # omit disabled connection, we they still rename in the genome innovation list for possiblity for reenabling
+                continue
 
             source, target =  int(connection_str.split("->")[0]), int(connection_str.split("->")[1])
 
@@ -63,7 +69,7 @@ class NeatNeuralNetwork:
             elif int(target) in list(self.connections.keys()):
                 self.connections[int(target)].append(source_str)
 
-        print(f"Connections: {self.connections}")  # contains only hidden/output nodes
+        print(f"Connections: {self.connections}\n")  # contains only hidden/output nodes
         # if there are some connection of the bias node (not empty), then get teh first one as a sample adn add bias-node-id to all-nodes-list
         if self.bias_node_connections:
             bias_source, bias_target =  int(list(self.bias_node_connections.values())[0].split("->")[0]), int(list(self.bias_node_connections.values())[0].split("->")[1])
@@ -86,10 +92,39 @@ class NeatNeuralNetwork:
         exp_z = np.exp(Z - np.max(Z))  # sub max(z) for numerical stability
         return exp_z / np.sum(exp_z)
     
-    def forward_propagation(self, X): # [x1, x2, x3,..] every element of x in input node value
+    """
+    Topological sort the ndoes in our DAG graph, because to compute activation of cur-node need acitvation of its source-node, if we havent computed 
+    activation of source-node we cant compute activation of cur-node. 
+    """
+    def get_topological_order(self):
+        dependencies = {node: set() for node in self.all_nodes}
         
-        print(f"All_nodes: {self.all_nodes}")
-        for cur_node in self.all_nodes:   # iterate every node
+        for target, source_list in self.connections.items():
+            for source_str in source_list:
+                source = int(source_str.split('_')[0]) 
+                dependencies[target].add(source)
+        
+        ordered_nodes = self.input_nodes.copy()
+        processed = set(self.input_nodes)
+        
+        if self.bias_node_id:
+            ordered_nodes.append(self.bias_node_id)
+            processed.add(self.bias_node_id)
+        
+        while len(processed) < len(self.all_nodes):
+            for node in self.all_nodes:
+                if node not in processed:
+                    if all(dep in processed for dep in dependencies[node]):
+                        ordered_nodes.append(node)
+                        processed.add(node)
+        
+        return ordered_nodes
+    
+    def forward_propagation(self, X): # [x1, x2, x3,..] every element of x in input node value
+        # topologicaly sorted node-ids to prevent trying to acess activation of a source node to compute cur-node acitvation, when we havent computed activation of that source-node yet
+        top_sorted_nodes = self.get_topological_order()  
+        print(f"All_nodes_topological: {top_sorted_nodes}")
+        for cur_node in top_sorted_nodes:   # iterate every node
             anomalies = [] # bias nodes & nodes that dont have a connection to them, want to exlcude them in below Z,A computations because they have a predefined output
             if cur_node not in list(self.connections.keys()) and cur_node not in self.input_nodes: # if cur-node doesnt have any connections to it, then it outputs 0
                 self.Z[cur_node] = 0
@@ -103,12 +138,15 @@ class NeatNeuralNetwork:
 
             if cur_node not in self.input_nodes:  # if it is not a input node compute forward  and it doesnt have any connections to it (its out will be zero)
                 print(f"Cur-node: {cur_node}")
-                if cur_node in self.connections: source_list = self.connections[cur_node] # get list of connections for cur-node only if it has connections
+                if cur_node in self.connections: 
+                    source_list = self.connections[cur_node] # get list of connections for cur-node only if it has connections
+                else:
+                    continue
                 for source_str in source_list:   # iterate every source-str "1_1N2" for cur-node
                     pattern = r"(\d+)_IN(\d+)"
                     match = re.match(pattern, source_str)
                     source_node = int(match.group(1))  
-                    print(f"Source-node: {source_node}")
+                    print(f"Source-node: {source_node}") # the cur-nodes sources
                     innovation_number = int(match.group(2)) 
 
                     # if cur-node is not bias node and is not a node that doesnt have any connections to it
@@ -123,7 +161,6 @@ class NeatNeuralNetwork:
                                 self.Z[cur_node] = self.A[source_node] * self.weights[innovation_number]  # activation-source-node * weight connecting source to cur-node
                                 #self.A[cur_node] = self.softmax(self.Z[cur_node]) * self.weights[innovation_number]
                             else:       # its hidden node
-                                print(self.Z[cur_node] )
                                 self.Z[cur_node] = self.A[source_node] * self.weights[innovation_number]
                                 self.A[cur_node] = self.relu(self.Z[cur_node]) * self.weights[innovation_number]
 
@@ -135,22 +172,22 @@ class NeatNeuralNetwork:
         output_A_vector = self.softmax(output_Z_vector)   # returns activations for each Z-output-node in order     
         for i, out in enumerate(self.output_nodes): # use index of order in which is appeared in output-nodes (order in which we added to output-z-vector)
             self.A[out] = output_A_vector[i]           # to set the otuput-node-activation to softmax-act-val
-        print(f"output_A_vector: {output_A_vector}")
-        print(f"self.Z: {self.Z}")
-        print(f"self.A: {self.A}")
+        print(f"output_A_vector: {output_A_vector}\n")
+        #print(f"self.Z: {self.Z}")
+        print(f"self.A: {self.A}, consists of only hidden/output/bias\n")
         # iterate bias connections
 
 def main():
     input_nodes = [1, 2]
-    output_nodes = [6, 7]
+    output_nodes = [6, 7]  # order of output-nodes in output_A_vector
 
     IN = {1:"1->3", 2:"1->4", 4:"5->6" , 5:"2->7", 3:"2->4"}  # each connection-str it is source-node-id->target-node-id
     bias_node_connections = {6: "8->5"}  # bias node can have multiple connections to different nodes
     
     n1 = NeatNeuralNetwork(innovation_nums=IN, input_nodes=input_nodes,output_nodes=output_nodes, bias_node_connections=bias_node_connections, seed_individual=True, initializer="glorot_normal")
-    n1.prepare_network()
     n1.forward_propagation([1, 2])
 
-main()
+main()  # uncomment when importating from other file to avoid run
 
 # [?] how is topology of network initalized
+# TBD: add bias node connection after computing Z
