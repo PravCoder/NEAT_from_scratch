@@ -4,7 +4,7 @@ import re
 
 class NeatNeuralNetwork: 
 
-    def __init__(self, innovation_nums, input_nodes, output_nodes, bias_node_id, weights={}, seed_individual=False, initializer=None):  # representation of a genome
+    def __init__(self, innovation_nums, input_nodes, output_nodes, bias_node_id, weights={}, seed_individual=False, initializer=None, fitness=0):  # representation of a genome
         self.innovation_nums = innovation_nums
         self.input_nodes = input_nodes  # ids of input/output nodes
         self.output_nodes = output_nodes
@@ -19,7 +19,7 @@ class NeatNeuralNetwork:
         self.max_IN = self.update_max_IN()
         self.Z = {}  # {node-id: weight-sum-scalar}
         self.A = {}  # {node-id: activated-sum}
-        self.fitness = 0
+        self.fitness = fitness
         self.prepare_network()
 
 
@@ -54,7 +54,7 @@ class NeatNeuralNetwork:
     def prepare_network(self):
         for in_num, connection_str in list(self.innovation_nums.items()):
 
-            if "D" in connection_str: # omit disabled connection, we they still rename in the genome innovation list for possiblity for reenabling
+            if "D" in connection_str: # omit disabled connection, we they still remain in the genome innovation list for possiblity for reenabling
                 continue
 
             source, target =  int(connection_str.split("->")[0]), int(connection_str.split("->")[1])
@@ -187,12 +187,15 @@ def main():
     input_nodes = [1, 2]
     output_nodes = [6, 7]  # order of output-nodes in output_A_vector
 
-    IN = {1:"1->3", 2:"1->4", 4:"5->6" , 5:"2->7", 3:"2->4", 6: "8->5"}  # each connection-str it is source-node-id->target-node-id # bias node can have multiple connections to different nodes, IN: source-target
+    # each connection-str it is source-node-id->target-node-id # include bias node here can have multiple connections to different nodes, IN: source-target
+    IN = {1:"1->3", 2:"1->4", 4:"5->6" , 5:"2->7", 3:"2->4", 6: "8->5"} 
     
     n1 = NeatNeuralNetwork(innovation_nums=IN, input_nodes=input_nodes,output_nodes=output_nodes, bias_node_id=8, seed_individual=True, initializer="glorot_normal")
     n1.forward_propagation([1, 2])
 
 main()  # uncomment when importating from other file to avoid run
 
-# [?] how is topology of network initalized
-# TBD: add bias node connection after computing Z
+# TBD how is topology of network initalized, for initial population
+# DONE: add bias node connection after computing Z
+# TBD: check forward using calculator
+# TBD: test for XOR multi-class-clasification
