@@ -14,7 +14,55 @@ class Population:
         pass
 
     def crossover_genomes(self, n1, n2):
-        pass
+        offspring_IN = {}  # {innovation-num: connection-string}
+        offspring_weights = {}  # {innnovation_num: weight-value}
+        n1_n2_matching_genes = self.find_matching_genes(n1, n2)
+
+        n1_disjoint_genes = self.find_disjoint_genes(n1, n2)
+        n1_excess_genes = self.find_excess_genes(n1, n2)
+   
+        n2_disjoint_genes = self.find_disjoint_genes(n2, n1)
+        n2_excess_genes = self.find_excess_genes(n2, n1)
+
+        # inherit each individual matching gene randomly inherit from either parent
+        for in_num in n1_n2_matching_genes:  # for each matching-gene-innovation-num randomly choose one of the parent genomes 
+            rand_genome = random.choice([n1, n2]) 
+            offspring_IN[in_num] = rand_genome.innovation_nums[in_num] # save randomly chosen genomes innovation-num:"source->target"
+            offspring_weights[in_num] = rand_genome.weights[in_num]   # save randomly chosen genomes innovation-num:weight-value
+
+        # inherit all disjoint/excess genes from fitter parent
+        if n1.fitness > n2.fitness:
+            for in_num in n1_disjoint_genes: # iterate all n1 disjoint-gnees
+                offspring_IN[in_num] = n1.innovation_nums[in_num]  # {innovation-num: "source->target"}
+                offspring_weights[in_num] = n1.weights[in_num]     # {innovaiton-num: weight-value}
+            for in_num in n1_excess_genes:  # iterate all n1 exces-genes
+                offspring_IN[in_num] = n1.innovation_nums[in_num]
+                offspring_weights[in_num] = n1.weights[in_num] 
+        if n2.fitness > n1.fitness:
+            for in_num in n2_disjoint_genes:  # iterate all n2 disjoint-genes
+                offspring_IN[in_num] = n2.innovation_nums[in_num]
+                offspring_weights[in_num] = n2.weights[in_num] 
+            for in_num in n2_excess_genes:    # iterate all n2 excess-genes
+                offspring_IN[in_num] = n2.innovation_nums[in_num]
+                offspring_weights[in_num] = n2.weights[in_num] 
+        else:  # when fitness is equal random decision is made to inherit all excess/disjoint from either parent
+            rand_genome = random.choice([n1, n2]) 
+            if rand_genome == n1:
+                all_disjoint_excess_genes_from_a_genome = n1_disjoint_genes+n1_excess_genes
+                for in_num in all_disjoint_excess_genes_from_a_genome:
+                    offspring_IN[in_num] = n1.innovation_nums[in_num] # save randomly chosen genomes innovation-num:"source->target"
+                    offspring_weights[in_num] = n1.weights[in_num]   # save randomly chosen genomes innovation-num:weight-value
+            if rand_genome == n2:
+                all_disjoint_excess_genes_from_a_genome = n2_disjoint_genes+n2_excess_genes
+                for in_num in all_disjoint_excess_genes_from_a_genome:
+                    offspring_IN[in_num] = n2.innovation_nums[in_num] # save randomly chosen genomes innovation-num:"source->target"
+                    offspring_weights[in_num] = n2.weights[in_num]   # save randomly chosen genomes innovation-num:weight-value
+            
+            
+            
+
+        print(f"{offspring_IN=}")
+        print(f"{offspring_weights=}")
 
     def find_matching_genes(self, n1, n2): # order of genomes doesnt matter returns IN_nums common in both genomes
         matching_genes_IN_genes = []
@@ -40,7 +88,7 @@ class Population:
         excess_genes_IN_nums = []
         # get highest innovation number of other genome
         high_IN = max(list(n2.innovation_nums.keys()))
-        # iterate genes that exist in current genome
+        # iterate genes that exist in current genome, optimization: Instead of iterating over all keys in n1.innovation_nums.keys(), you could use a filter step that excludes keys below high_IN
         for in_num in n1.innovation_nums.keys():
             # if cur-genome gene odesnt exist in other genome genes and is higher than highest innovation number of other genome it is excess
             if in_num not in list(n2.innovation_nums.keys()) and in_num > high_IN:
@@ -63,21 +111,21 @@ def main():
     IN1 = {1:"1->4",2:"2->4D",3:"3->4",4:"2->5",5:"5->4",8:"1->5"}
     n1 = NeatNeuralNetwork(innovation_nums=IN1, input_nodes=[1,2,3],
                            output_nodes=[4], bias_node_id=-1, 
-                           seed_individual=True, initializer="glorot_normal")
+                           seed_individual=True, initializer="glorot_normal", fitness=1)
 
 
     print("---N2 FORWARD PROP---")
     IN2 = {1:"1->4",2:"2->4D",3:"3->4",4:"2->5",5:"5->4D",6:"5->6",7:"6->4",9:"3->5",10:"1->6"}
     n2 = NeatNeuralNetwork(innovation_nums=IN2, input_nodes=[1,2,3],
                            output_nodes=[4], bias_node_id=-1, 
-                           seed_individual=True, initializer="glorot_normal")
+                           seed_individual=True, initializer="glorot_normal", fitness=2)
     
     n1.forward_propagation([0.1, 0.2, 0.3])  # out always 1 because of sigmoid
     n2.forward_propagation([0.1, 0.2, 0.3])
 
     n1_n2_matching_genes = p1.find_matching_genes(n1, n2)
     print(f"{n1_n2_matching_genes=}")
-    
+
     n1_disjoint_genes = p1.find_disjoint_genes(n1, n2)
     n1_excess_genes = p1.find_excess_genes(n1, n2)
     print(f"{n1_disjoint_genes=}")
@@ -86,6 +134,8 @@ def main():
     n2_disjoint_genes = p1.find_disjoint_genes(n2, n1)
     n2_excess_genes = p1.find_excess_genes(n2, n1)
     print(f"{n2_disjoint_genes=}")
-    print(f"{n2_excess_genes=}")
+    print(f"{n2_excess_genes=}\n")
+
+    p1.crossover_genomes(n1, n2)
 
 main()
