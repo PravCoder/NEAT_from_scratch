@@ -16,8 +16,13 @@ class Population:
     def crossover_genomes(self, n1, n2):
         pass
 
-    def find_matching_genes(self, n1, n2):
-        pass
+    def find_matching_genes(self, n1, n2): # order of genomes doesnt matter returns IN_nums common in both genomes
+        matching_genes_IN_genes = []
+        # iterate innovation_num genes of any genome if it exists in genes of other genome it is matching
+        for in_num in n1.innovation_nums.keys():
+            if in_num in list(n2.innovation_nums.keys()):
+                matching_genes_IN_genes.append(in_num)
+        return matching_genes_IN_genes
 
     def find_disjoint_genes(self, n1, n2):  # finds disjoint genes for first genome n1
         disjoint_genes_IN_nums = []
@@ -70,6 +75,9 @@ def main():
     n1.forward_propagation([0.1, 0.2, 0.3])  # out always 1 because of sigmoid
     n2.forward_propagation([0.1, 0.2, 0.3])
 
+    n1_n2_matching_genes = p1.find_matching_genes(n1, n2)
+    print(f"{n1_n2_matching_genes=}")
+    
     n1_disjoint_genes = p1.find_disjoint_genes(n1, n2)
     n1_excess_genes = p1.find_excess_genes(n1, n2)
     print(f"{n1_disjoint_genes=}")
