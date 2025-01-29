@@ -158,7 +158,7 @@ class Population:
                                 nonexistent_connections.append((source_node, target_node))
                         else:
                             nonexistent_connections.append((source_node, target_node))
-                            
+
         print(f"{existing_connections=}")
         print(f"{nonexistent_connections=}")
 
@@ -179,13 +179,42 @@ class Population:
             n1.connections[new_innovation_num].append(f"{rand_source}_IN{new_innovation_num}")
         # TBD: if we are adding a connection that is disabled instead of creating a new entry just enable the disbaled connection. 
         return n1
+    
+    def add_node_mutation(self, n1):
+        # after adding node, topologically sort all nodes again
+        # run prepare-network again to comptue all of its connections
+        
+        random_IN_item = random.choice(list(n1.innovation_nums.items()))  # chose random connection-item in innovation-num
+        random_innovation_num = random_IN_item[0]
+        rand_source, rand_target = int(random_IN_item[1].split('->')[0]), int(random_IN_item[1].split('->')[1]) # access 1 for value to get s->t, TBD: make sure random chosen connection doesnt have D
+        print(f"**Random connection to split: {random_IN_item=}, {rand_source=}, {rand_target=}")
+        
+        # disable random connection via innovation-num
+        n1.innovation_nums[random_innovation_num] += "D"
+        
+        # create new node and add it to all nodes
+        new_node_id = n1.get_max_node_id() + 1
+        n1.all_nodes.append(new_node_id)
 
+        # create connection from original source node to new node
+        new_innovation_num1 = n1.update_max_IN() + 1
+        n1.innovation_nums[new_innovation_num1] = f"{rand_source}->{new_node_id}"
+        n1.weights[new_innovation_num1] = 1  # set original->new node weight to 1
 
+        # create connection from new-node to original target node
+        new_innovation_num2 = n1.update_max_IN() + 1
+        n1.innovation_nums[new_innovation_num2] = f"{new_node_id}->{rand_target}"
+        n1.weights[new_innovation_num2] = random.gauss(0, 0.1)  # set new-node->target-og weight to small value
+
+        n1.prepare_network() # updates toplogical order of nodes with new-node, and sef.connections of each node, the sources of each target. 
+        print(f"**{new_innovation_num1=}, {new_innovation_num2=}")
+        return n1
 
 def main():
     test_crossover=False
     test_weight_mutation=False
-    test_add_connection_mutation=True
+    test_add_connection_mutation=False
+    test_add_node_mutation=True
 
     p1 = Population(2)
 
@@ -239,5 +268,21 @@ def main():
         print(f"Before: {n2.innovation_nums=}")
         p1.add_connection_mutation(n2)
         print(f"After: {n2.innovation_nums=}")
+
+    if test_add_node_mutation:
+        print("\n***** Test Add Node Mutation *****")
+        print("N1")
+        print(f"Before: {n1.innovation_nums=}")
+        p1.add_node_mutation(n1)
+        print(f"After: {n1.innovation_nums=}")
+        print(f"New Connections: {n1.connections}") # make sure new node connections are in sources
+        print(f"New Weights: {n1.weights}") # make sure new connection weights are there
+
+        print("\nN2")
+        print(f"Before: {n2.innovation_nums=}")
+        p1.add_node_mutation(n2)
+        print(f"After: {n2.innovation_nums=}")
+        print(f"New Connections: {n2.connections}") # make sure new node connections are in sources
+        print(f"New Weights: {n2.weights}") # make sure new connection weights are there
 
 main()

@@ -82,6 +82,13 @@ class NeatNeuralNetwork:
     def update_max_IN(self):
         self.max_IN = max(list(self.innovation_nums.keys()))
         return self.max_IN
+    def get_max_node_id(self):
+        max_node_id = 0
+        for key, value in self.innovation_nums.items():
+            if "D" not in value:
+                source, target = map(int, value.split("->"))
+                max_node_id = max(max_node_id, source, target)
+        return max_node_id
     
     def relu(self, Z):
         return np.maximum(0, Z)
