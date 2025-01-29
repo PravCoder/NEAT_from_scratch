@@ -120,13 +120,11 @@ class Population:
     
     def add_connection_mutation(self, n1):
         existing_connections = {}  # {target-node-id: [source1-id, source2-id], node1: [s1,s2,s3]|
-        nonexistent_connections = [] # list of sets [ (source,target), (s,t)]
+        nonexistent_connections = [] # list of tuples [ (source,target), (s,t)]
         # topologically-sorted-node-ids: [1, 2, 3, 5, 6, 4], can we connect 5->4 but not 4-> because its a backward connection
         print(f"top-sorted-nodes-{n1.all_nodes}")
-        existing_connections = {}  # {target-node-id: [source1-id, source2-id]}
-        nonexistent_connections = []  # list of tuples [(source,target)]
         
-        # Build existing connections dictionary
+        # populate exisitng connecitons dict
         for target_node_id, connection_arr in n1.connections.items():
             existing_connections[target_node_id] = []
             for connection_str in connection_arr:
@@ -160,9 +158,27 @@ class Population:
                                 nonexistent_connections.append((source_node, target_node))
                         else:
                             nonexistent_connections.append((source_node, target_node))
+                            
         print(f"{existing_connections=}")
         print(f"{nonexistent_connections=}")
-        return nonexistent_connections
+
+        # merge new connection
+        rand_connection = random.choice(nonexistent_connections)  # choose a random non-existent connection
+        print(f"Random Connection: {rand_connection}")
+        rand_source, rand_target = rand_connection[0], rand_connection[1]
+        new_innovation_num = n1.update_max_IN() + 1
+
+        n1.innovation_nums[new_innovation_num] = f"{rand_source}->{rand_target}"  # {in-num: "s->target"}
+        
+        n1.weights[new_innovation_num] = random.gauss(0, 0.1)
+
+        # add connection to connections-dict
+        if new_innovation_num not in n1.connections.keys():
+            n1.connections[new_innovation_num] = [f"{rand_source}_IN{new_innovation_num}"]
+        else:
+            n1.connections[new_innovation_num].append(f"{rand_source}_IN{new_innovation_num}")
+        # TBD: if we are adding a connection that is disabled instead of creating a new entry just enable the disbaled connection. 
+        return n1
 
 
 
@@ -215,8 +231,13 @@ def main():
     if test_add_connection_mutation:
         print("\n***** Test Add Connection Mutation *****")
         print("N1")
+        print(f"Before: {n1.innovation_nums=}")
         p1.add_connection_mutation(n1)
-        print("N2")
+        print(f"After: {n1.innovation_nums=}")
+
+        print("\nN2")
+        print(f"Before: {n2.innovation_nums=}")
         p1.add_connection_mutation(n2)
+        print(f"After: {n2.innovation_nums=}")
 
 main()
