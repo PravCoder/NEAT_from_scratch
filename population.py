@@ -58,8 +58,6 @@ class Population:
                     offspring_IN[in_num] = n2.innovation_nums[in_num] # save randomly chosen genomes innovation-num:"source->target"
                     offspring_weights[in_num] = n2.weights[in_num]   # save randomly chosen genomes innovation-num:weight-value
             
-            
-            
 
         print(f"{offspring_IN=}")
         print(f"{offspring_weights=}")
@@ -103,39 +101,55 @@ class Population:
         else:
             return random.choice([n1, n2])
         
+    def weight_mutation(self, n1):
+        # iterate all innovation-numbers of genome and add small random guassian distribution value to its weight value
+        for in_num in n1.innovation_nums.keys():
+            n1.weights[in_num] += random.gauss(0, 0.1)
+        return n1
+        
 
 def main():
+    test_crossover=False
+    test_weight_mutation=True
+
     p1 = Population(2)
 
-    print("---N1 FORWARD PROP---")
+    # example of 2 parent networks in paper. 
+    print("---N1 FORWARD PRO/INIT---")
     IN1 = {1:"1->4",2:"2->4D",3:"3->4",4:"2->5",5:"5->4",8:"1->5"}
     n1 = NeatNeuralNetwork(innovation_nums=IN1, input_nodes=[1,2,3],
                            output_nodes=[4], bias_node_id=-1, 
                            seed_individual=True, initializer="glorot_normal", fitness=1)
+    n1.forward_propagation([0.1, 0.2, 0.3])  # out always 1 because of sigmoid
 
-
-    print("---N2 FORWARD PROP---")
+    print("---N2 FORWARD PROP/INIT---")
     IN2 = {1:"1->4",2:"2->4D",3:"3->4",4:"2->5",5:"5->4D",6:"5->6",7:"6->4",9:"3->5",10:"1->6"}
     n2 = NeatNeuralNetwork(innovation_nums=IN2, input_nodes=[1,2,3],
                            output_nodes=[4], bias_node_id=-1, 
                            seed_individual=True, initializer="glorot_normal", fitness=2)
-    
-    n1.forward_propagation([0.1, 0.2, 0.3])  # out always 1 because of sigmoid
     n2.forward_propagation([0.1, 0.2, 0.3])
 
-    n1_n2_matching_genes = p1.find_matching_genes(n1, n2)
-    print(f"{n1_n2_matching_genes=}")
+    if test_crossover:
+        print("\n*** Test Crossover ***")
+        n1_n2_matching_genes = p1.find_matching_genes(n1, n2)
+        print(f"{n1_n2_matching_genes=}")
 
-    n1_disjoint_genes = p1.find_disjoint_genes(n1, n2)
-    n1_excess_genes = p1.find_excess_genes(n1, n2)
-    print(f"{n1_disjoint_genes=}")
-    print(f"{n1_excess_genes=}")
+        n1_disjoint_genes = p1.find_disjoint_genes(n1, n2)
+        n1_excess_genes = p1.find_excess_genes(n1, n2)
+        print(f"{n1_disjoint_genes=}")
+        print(f"{n1_excess_genes=}")
 
-    n2_disjoint_genes = p1.find_disjoint_genes(n2, n1)
-    n2_excess_genes = p1.find_excess_genes(n2, n1)
-    print(f"{n2_disjoint_genes=}")
-    print(f"{n2_excess_genes=}\n")
+        n2_disjoint_genes = p1.find_disjoint_genes(n2, n1)
+        n2_excess_genes = p1.find_excess_genes(n2, n1)
+        print(f"{n2_disjoint_genes=}")
+        print(f"{n2_excess_genes=}\n")
 
-    p1.crossover_genomes(n1, n2)
+        p1.crossover_genomes(n1, n2)
+    
+    if test_weight_mutation:
+        print("\n*** Test Weight Mutation ***")
+        print(f"Before weights: {n1.weights}")
+        p1.weight_mutation(n1)
+        print(f"\nAfter weights: {n1.weights}")
 
 main()

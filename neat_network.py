@@ -9,7 +9,7 @@ class NeatNeuralNetwork:
         self.input_nodes = input_nodes  # ids of input/output nodes
         self.output_nodes = output_nodes
         self.all_nodes = [] # ids of all nodes in network including input/output/bias-node
-        self.weights = weights
+        self.weights = weights  # {innovation-num: weight value of that connecion}
         self.bias_node_id = bias_node_id
         self.seed_individual = seed_individual
         self.initializer = initializer
@@ -193,7 +193,7 @@ def main():
     n1 = NeatNeuralNetwork(innovation_nums=IN, input_nodes=input_nodes,output_nodes=output_nodes, bias_node_id=8, seed_individual=True, initializer="glorot_normal")
     n1.forward_propagation([1, 2])
 
-main()  # uncomment when importating from other file to avoid run
+#main()  # uncomment when importating from other file to avoid run
 
 # TBD how is topology of network initalized, for initial population
 # DONE: add bias node connection after computing Z
