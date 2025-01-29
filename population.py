@@ -123,40 +123,46 @@ class Population:
         nonexistent_connections = [] # list of sets [ (source,target), (s,t)]
         # topologically-sorted-node-ids: [1, 2, 3, 5, 6, 4], can we connect 5->4 but not 4-> because its a backward connection
         print(f"top-sorted-nodes-{n1.all_nodes}")
-        # populate exisiting connections
-        for target_node_id, connection_arr in n1.connections.items(): # {3: ['1_IN1'], 4: ['2_IN3'], 6: ['5_IN4'],
+        existing_connections = {}  # {target-node-id: [source1-id, source2-id]}
+        nonexistent_connections = []  # list of tuples [(source,target)]
+        
+        # Build existing connections dictionary
+        for target_node_id, connection_arr in n1.connections.items():
+            existing_connections[target_node_id] = []
             for connection_str in connection_arr:
-                source_node_id, innovation_num = self.extract_node_and_innovation(connection_str)
-                if target_node_id not in existing_connections.keys():
-                    existing_connections[target_node_id] = [source_node_id]
-                else:
-                    existing_connections[target_node_id].append(source_node_id)
+                source_node_id, _ = self.extract_node_and_innovation(connection_str)
+                existing_connections[target_node_id].append(source_node_id)
+        
+        top_sorted_nodes = n1.all_nodes  # [1, 2, 3, 5, 6, 4]
+        
+        # for each pair of nodes in topological order
+        for i, source_node in enumerate(top_sorted_nodes):
+            # if source node is not input node 
+            if source_node not in n1.input_nodes:
+                # only consider target nodes that come after source in topological order
+                for target_node in top_sorted_nodes[i+1:]:
+                    # skip if target node is an input node, cant go backward and have input as a target
+                    if target_node not in n1.input_nodes:
+                        # check if this connection already exists
+                        if target_node in existing_connections:
+                            if source_node not in existing_connections[target_node]:
+                                # connection doesn't exist and respects topological order
+                                nonexistent_connections.append((source_node, target_node))
+                        else:
+                            # target node has no incoming connections at all
+                            nonexistent_connections.append((source_node, target_node))
+            else:  # if source node is an input node
+                # only consider non-input nodes as targets, becuse cant have (input, input)
+                for target_node in top_sorted_nodes[i+1:]:
+                    if target_node not in n1.input_nodes:
+                        if target_node in existing_connections:
+                            if source_node not in existing_connections[target_node]:
+                                nonexistent_connections.append((source_node, target_node))
+                        else:
+                            nonexistent_connections.append((source_node, target_node))
         print(f"{existing_connections=}")
-
-        # iterate items of existing connections {target: [s1,s2,s3]}
-        for i in range(len(list(existing_connections.items()))):
-            item = list(existing_connections.items())[i]
-            target_node = item[0]
-            target_node_sources_arr = item[1]
-
-
-            # iterate all other existing connections {other: [s1,s2,s3]}
-            for j in range(len(list(existing_connections.items()))):
-                if True:
-                    item = list(existing_connections.items())[j]
-                    other_node = item[0] 
-                    other_node_sources_arr = item[1]
-                    # compare if target-node and other-source node is not connected using target-node-sources-arr, < for toplogical order to prevent backwards connections
-                    for other_source in other_node_sources_arr:
-                        if n1.all_nodes.index(target_node) < n1.all_nodes.index(other_source) and target_node not in other_node_sources_arr and  ((target_node, other_source ) not in nonexistent_connections): # if we want to create this connection: target->other-source, check that the target-node is not a source of the other-node
-                            nonexistent_connections.append((target_node, other_source ))
-                        elif n1.all_nodes.index(other_source) < n1.all_nodes.index(target_node) and other_source not in target_node_sources_arr and ((other_source, target_node ) not in nonexistent_connections): # if we want to create this connection: other-source->target-node, check that other-source is not in target-node sources arr
-                            nonexistent_connections.append((other_source, target_node ))
-                        elif n1.all_nodes.index(target_node) < n1.all_nodes.index(other_node) and target_node not in other_node_sources_arr and  ((target_node, other_node ) not in nonexistent_connections): # if we want to create this connection target-node->other-node, check target-node is not a source of other-node-sources-arr
-                            nonexistent_connections.append((target_node, other_node ))
-                        elif n1.all_nodes.index(other_node) < n1.all_nodes.index(target_node) and other_node not in target_node_sources_arr and ((other_node, target_node ) not in nonexistent_connections): # if we want to create this connection other-node->target-node, cehck other-node is not in target-node sources-arr
-                            nonexistent_connections.append((other_node, target_node ))
         print(f"{nonexistent_connections=}")
+        return nonexistent_connections
 
 
 
