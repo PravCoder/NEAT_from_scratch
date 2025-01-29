@@ -1,7 +1,12 @@
 import numpy as np
 import re
 
-
+"""
+Representation of a genome
+self.innovation_nums = {innovation-num: "source->target", ...}
+self.weights = {innovation-num: weight-value}
+self.connections = {3: ['1_IN1'], 4: ['2_IN3'], 6: ['5_IN4'], 7: ['2_IN5']}, {node-id": [list of connections sourceNode_IN[innovation-num] ]}
+"""
 class NeatNeuralNetwork: 
 
     def __init__(self, innovation_nums, input_nodes, output_nodes, bias_node_id, weights={}, seed_individual=False, initializer=None, fitness=0):  # representation of a genome
@@ -13,7 +18,7 @@ class NeatNeuralNetwork:
         self.bias_node_id = bias_node_id
         self.seed_individual = seed_individual
         self.initializer = initializer
-        if self.seed_individual == True: self.initialize_weights()
+        if self.seed_individual == True: self.initialize_weights() # only init weights if it is first generation genome, else it already inherited weights during crossover
         # {{target: [source-ids]}, {'3': ['1_IN1']}, has the from-source node and innovation number of that connection in the value of each target node key. Contains hiddne/output nodes who have some connection to them, not nodes that dont have any connections to them
         self.connections = {} 
         self.max_IN = self.update_max_IN()
@@ -50,6 +55,7 @@ class NeatNeuralNetwork:
     For each node in network creates connections dict, where each key is node-id and its value is list of the from-source nodes connected to it
     and that corresponding target node source node IN number so we can look up the weight value efficently
     Connections: {3: ['1_IN1'], 4: ['2_IN3'], 6: ['5_IN4'], 7: ['2_IN5']}, each target node can have multiple source-strs
+    disabled connections like 2->4D in innovation_nums wont show up here. 
     """
     def prepare_network(self):
         for in_num, connection_str in list(self.innovation_nums.items()):
@@ -69,6 +75,7 @@ class NeatNeuralNetwork:
 
 
         print(f"Connections: {self.connections}\n")  # contains only hidden/output nodes
+        self.all_nodes = self.get_topological_order()
         print(f"all_nodes: {self.all_nodes}")
         return self.connections
     
@@ -115,14 +122,14 @@ class NeatNeuralNetwork:
         
         return ordered_nodes
     
-    def extract_connection_str(self, connec_str):
+    def extract_connection_str(self, connec_str): # value of innovation-num
         source, target =  int(connec_str.split("->")[0]), int(connec_str.split("->")[1])
         return source, target
     
     def forward_propagation(self, X): # [x1, x2, x3,..] every element of x in input node value
 
         # topologicaly sorted node-ids to prevent trying to acess activation of a source node to compute cur-node acitvation, when we havent computed activation of that source-node yet
-        top_sorted_nodes = self.get_topological_order()  
+        top_sorted_nodes = self.all_nodes
         print(f"all_nodes: {self.all_nodes}")
         print(f"All_nodes_topological: {top_sorted_nodes}")
 
