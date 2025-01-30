@@ -7,9 +7,20 @@ class Population:
     def __init__(self, num_individuals):
         self.num_individuals = num_individuals
         self.genome_networks = []  # each element in neural-net-obj represents a indivudal genome in pop
+        self.average_fitness = 0
 
-    def create_pop(self): # creates networks for number of inviduals in population
-        pass
+    def create_pop(self, IN, input_nodes, output_nodes, bias_node_id): # creates networks for number of inviduals in population
+        for _ in range(self.num_individuals):
+            n1 = NeatNeuralNetwork(innovation_nums=IN, input_nodes=input_nodes,output_nodes=output_nodes, bias_node_id=bias_node_id, seed_individual=True, initializer="glorot_normal") # first generation genome randomly initalize weights
+            self.genome_networks.append(n1)
+    
+    def compute_pop_fitness(self, X, Y):
+        # compute fitness of each genome
+        for i, cur_genome in enumerate(self.genome_networks):
+            print(f"\nEvaluating Fitness of {i}th Genome:")
+            cur_genome.fitness_evaluation_XOR(X, Y)   # compute fitness of each genome, WARNING: fitness might be same for all genomes
+            print(f"fitness: {cur_genome.fitness}")  
+            self.average_fitness += cur_genome.fitness
 
     def select_best_genomes(self):
         pass
@@ -214,7 +225,7 @@ def main():
     test_crossover=False
     test_weight_mutation=False
     test_add_connection_mutation=False
-    test_add_node_mutation=True
+    test_add_node_mutation=False
 
     p1 = Population(2)
 
@@ -285,4 +296,4 @@ def main():
         print(f"New Connections: {n2.connections}") # make sure new node connections are in sources
         print(f"New Weights: {n2.weights}") # make sure new connection weights are there
 
-main()
+#main()

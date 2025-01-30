@@ -97,10 +97,15 @@ class NeatNeuralNetwork:
         Z = np.clip(Z, -500, 500)  
         return 1 / (1 + np.exp(-Z))
     
-    def softmax(self, Z):
-        exp_z = np.exp(Z - np.max(Z))  # sub max(z) for numerical stability
-        return exp_z / np.sum(exp_z)
-    
+    # for probabilties that are close in each output node it rounds to 0.5 or rounds to something else resulting in genomes having same activations for each example
+    def softmax(self, Z):  
+        exp_z = np.exp(Z - np.max(Z))  # Subtract max for numerical stability
+        result = exp_z / np.sum(exp_z)
+        # Add small noise to break ties and introduce variance
+        result += np.random.normal(scale=1e-4, size=result.shape)
+        result = np.clip(result, 0, 1)  # Ensure no negative values and probabilities sum to 1
+        return result / np.sum(result)
+        
     """
     Topological sort the ndoes in our DAG graph, because to compute activation of cur-node need acitvation of its source-node, if we havent computed 
     activation of source-node we cant compute activation of cur-node. 
@@ -133,18 +138,18 @@ class NeatNeuralNetwork:
         source, target =  int(connec_str.split("->")[0]), int(connec_str.split("->")[1])
         return source, target
     
-    def forward_propagation(self, X): # [x1, x2, x3,..] every element of x in input node value
+    def forward_propagation(self, X): # [x1, x2, x3,..] every element of x in input node value, 1 example
 
         # topologicaly sorted node-ids to prevent trying to acess activation of a source node to compute cur-node acitvation, when we havent computed activation of that source-node yet
         top_sorted_nodes = self.all_nodes
-        print(f"all_nodes: {self.all_nodes}")
-        print(f"All_nodes_topological: {top_sorted_nodes}")
+        #print(f"all_nodes: {self.all_nodes}")
+        #print(f"All_nodes_topological: {top_sorted_nodes}")
 
         for cur_node in top_sorted_nodes:   # iterate every node
             anomalies = [] # bias nodes & nodes that dont have a connection to them, want to exlcude them in below Z,A computations because they have a predefined output
             # if its not a bias target and doesnt have any connections its output is 0
             if cur_node not in list(self.connections.keys()) and cur_node not in self.input_nodes and cur_node != self.bias_node_id: # if cur-node doesnt have any connections to it, then it outputs 0
-                print(f"cur-node doesnt have connections: {cur_node}")
+                #print(f"cur-node doesnt have connections: {cur_node}")
                 self.Z[cur_node] = 0
                 self.A[cur_node] = self.relu(self.Z[cur_node])
                 anomalies.append(cur_node)
@@ -152,10 +157,10 @@ class NeatNeuralNetwork:
                 self.Z[cur_node] = 1
                 self.A[cur_node] = 1
                 anomalies.append(cur_node)
-            print(f"anomalies: {anomalies}")
+            #print(f"anomalies: {anomalies}")
 
             if cur_node not in self.input_nodes and cur_node != self.bias_node_id:  # if it is not a input node compute forward  and it doesnt have any connections to it (its out will be zero)
-                print(f"Cur-node: {cur_node}")
+                #print(f"Cur-node: {cur_node}")
                 if cur_node in self.connections: 
                     source_list = self.connections[cur_node] # get list of connections for cur-node only if it has connections
                 else:
@@ -164,23 +169,25 @@ class NeatNeuralNetwork:
                     pattern = r"(\d+)_IN(\d+)"
                     match = re.match(pattern, source_str)
                     source_node = int(match.group(1))  
-                    print(f"Source-node: {source_node}") # the cur-nodes sources
-                    print(f"A={self.A}, Z={self.Z}")
+                    #print(f"Source-node: {source_node}") # the cur-nodes sources
+                    #print(f"A={self.A}, Z={self.Z}")
                     innovation_number = int(match.group(2)) 
 
                     # if cur-node is not bias node and is not a node that doesnt have any connections to it
                     if cur_node not in anomalies:
-                        # if the source-node of cur-node is a input-node
+                        # if the source-node of cur-node is a input-node, also a hidden node
                         if source_node in self.input_nodes:
+                            #print(f"this cur-node: {cur_node} has source-node which is an input-node: {source_node} in {self.input_nodes}")
                             indx = self.input_nodes.index(source_node)  # get input-node indx of this source-node
                             self.Z[cur_node] = X[indx] * self.weights[innovation_number]
                             self.A[cur_node] = self.relu(self.Z[cur_node])
                         else:  # if the source-node of cur-node is not a input-node, either hidden or output
                             if cur_node in self.output_nodes:  # its output-node
+                                #print(f"this is supposed to be a output node: {cur_node} its source: {source_node}")
                                 self.Z[cur_node] = self.A[source_node] * self.weights[innovation_number]  # activation-source-node * weight connecting source to cur-node
                                 #self.A[cur_node] = self.softmax(self.Z[cur_node]) * self.weights[innovation_number]
-                            else:       # its hidden node
-                                print(self.weights[innovation_number])
+                            else:       # its hidden node, where source is not an input node
+                                #print(f"this is supposed to be a hidden node: {cur_node} its source: {source_node}")
                                 self.Z[cur_node] = self.A[source_node] * self.weights[innovation_number]
                                 self.A[cur_node] = self.relu(self.Z[cur_node]) * self.weights[innovation_number]
     
@@ -188,14 +195,43 @@ class NeatNeuralNetwork:
         output_Z_vector = [] # each element is weighted sum of that output-node
         for cur_node in self.output_nodes:   # iterate each output-node in order
             output_Z_vector.append(self.Z[cur_node])  # add cur-output-node-z-value to vector in order
-                
+
+        #print(output_Z_vector)      
         output_A_vector = self.softmax(output_Z_vector)   # returns activations for each Z-output-node in order     
         for i, out in enumerate(self.output_nodes): # use index of order in which is appeared in output-nodes (order in which we added to output-z-vector)
             self.A[out] = output_A_vector[i]           # to set the otuput-node-activation to softmax-act-val
-        print(f"output_A_vector: {output_A_vector}\n")
+        #print(f"output_A_vector: {output_A_vector}\n")
         #print(f"self.Z: {self.Z}")
-        print(f"self.A: {self.A}, consists of only hidden/output/bias\n")
+        #print(f"self.A: {self.A}, consists of only hidden/output/bias\n")
         # iterate bias connections
+        return self.A
+
+    def fitness_evaluation_XOR(self, X, Y):
+        total_error = 0
+
+        # compute predictions of genome
+        activations = []  # each element is list of output-node activations for that ith example
+        for i in range(len(X)):
+            X_example, Y_example = X[i], Y[i]   # [0,1], [0, 1]
+            #print(f"{X_example=}")
+            self.forward_propagation(X_example)  # updates self.A activations with cur example input activations
+            cur_activations = []  # each element is activation of ith output node for cur-example
+            for out_node_id in self.output_nodes:
+                cur_activations.append(self.A[out_node_id])
+            activations.append(cur_activations)
+
+            # compte mse error for cur-example, sum up
+            cur_example_error = sum((Y_example[j] - cur_activations[j]) ** 2 for j in range(len(Y_example)))
+            total_error += cur_example_error
+
+        avg_error = total_error / len(X)  # compute error across all examples by taking average
+        self.fitness = 1 / (1 + avg_error)  # compute fitness value low error -> high fitness
+        print(f"acts: {activations}")
+
+        
+        
+
+
 
 def main():
     input_nodes = [1, 2]
@@ -205,7 +241,7 @@ def main():
     IN = {1:"1->3", 2:"1->4", 4:"5->6" , 5:"2->7", 3:"2->4", 6: "8->5"} 
     
     n1 = NeatNeuralNetwork(innovation_nums=IN, input_nodes=input_nodes,output_nodes=output_nodes, bias_node_id=8, seed_individual=True, initializer="glorot_normal")
-    n1.forward_propagation([1, 2])
+    n1.forward_propagation([1, 2])  # input is a example ith element is value of ith node
 
 #main()  # uncomment when importating from other file to avoid run
 
@@ -213,3 +249,12 @@ def main():
 # DONE: add bias node connection after computing Z
 # TBD: check forward using calculator
 # TBD: test for XOR multi-class-clasification
+
+# TODO:
+# 1. create population
+# 2. fitness evaluation of each genome xor
+# 3. select best genomes via fitness
+# 4. pair parents and create offpsring
+# 5. randomly mutate some offspring choose what mutation to use randomly or use all
+# 6. run generation loop
+# 7. graph average pop fitness per generation
