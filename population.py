@@ -8,6 +8,7 @@ class Population:
         self.num_individuals = num_individuals
         self.genome_networks = []  # each element in neural-net-obj represents a indivudal genome in pop
         self.average_fitness = 0
+        self.best_fitness = 0
 
     def create_pop(self, IN, input_nodes, output_nodes, bias_node_id): # creates networks for number of inviduals in population
         for _ in range(self.num_individuals):
@@ -17,13 +18,77 @@ class Population:
     def compute_pop_fitness(self, X, Y):
         # compute fitness of each genome
         for i, cur_genome in enumerate(self.genome_networks):
-            print(f"\nEvaluating Fitness of {i}th Genome:")
+            #print(f"\nEvaluating Fitness of {i}th Genome:") # AOGFB
             cur_genome.fitness_evaluation_XOR(X, Y)   # compute fitness of each genome, WARNING: fitness might be same for all genomes
-            print(f"fitness: {cur_genome.fitness}")  
+            #print(f"fitness: {cur_genome.fitness}")  # AOGFB
             self.average_fitness += cur_genome.fitness
+            self.best_fitness = max(self.best_fitness, cur_genome.fitness)
+        self.average_fitness /= self.num_individuals
+        #print(f"average fitness: {self.average_fitness}") # AOGFB
+        #print(f"best fitness: {self.best_fitness}") # AOGFB
 
-    def select_best_genomes(self):
-        pass
+    def select_best_genomes(self, tournament_size, elite_size):
+        # create population with fitness tuples
+        selected_parents = []
+        population = [(genome, genome.fitness) for genome in self.genome_networks]
+        # sort population by fitness in descending order
+        sorted_population = sorted(population, key=lambda x: x[1], reverse=True)
+        # elitism - directly add top performers
+        elites = [genome for genome, _ in sorted_population[:elite_size]]
+        selected_parents.extend(elites)
+        # tournament selection for remaining spots
+        num_selections_needed = self.num_individuals - elite_size
+        
+        for _ in range(num_selections_needed):
+            tournament_candidates = random.sample(sorted_population, tournament_size)
+            winner = max(tournament_candidates, key=lambda x: x[1])[0]  # Get genome with highest fitness
+            selected_parents.append(winner)
+
+        return selected_parents
+    
+    def create_offsprings(self, tournament_size, elite_size, gen_num):
+        print(f"\nGENERATION {gen_num}th STATS:")
+        print(f"Average fitness: {self.average_fitness}")
+        print(f"Best fitness: {self.best_fitness}\n")
+
+        parents = self.select_best_genomes(tournament_size=tournament_size, elite_size=elite_size)
+        # create new population starting with elites
+        offsprings = parents[:elite_size]  # Keep elites unchanged
+        
+        # generate remaining offspring through crossover
+        num_offspring_needed = self.num_individuals - elite_size
+        
+        # pair parents for crossover
+        for _ in range(num_offspring_needed):
+            # randomly select two different parents
+            parent1, parent2 = random.choice(parents), random.choice(parents)
+            #print("----------CROSSOVER PARENTS----------") # AOGFB
+            
+            # create offspring through crossover
+            offspring = self.crossover_genomes(parent1, parent2)
+            #print("-Offpring Original Info:")      # AOGFB
+            #print(f"{offspring.innovation_nums=}") # AOGFB
+            #print(f"{offspring.weights=}") # AOGFB
+            
+            #print("\n-Offspring Mutation Info") # AOGFB
+            rand_num = random.random()
+            if rand_num < 0.30: # 80% chance ->
+                self.add_connection_mutation(offspring)
+            elif rand_num < 0.60: # 5% chance -> add connection
+                self.add_connection_mutation(offspring)
+            elif rand_num < 1.00:  # 3% chance ->  add node mutation
+                self.add_node_mutation(offspring)
+            
+            offsprings.append(offspring)
+            #print(f"{offspring.innovation_nums=}") # AOGFB
+            #print(f"{offspring.weights=}") # AOGFB
+
+        # set offsprigns as new population
+        self.genome_networks = offsprings
+        self.num_individuals = len(self.genome_networks)
+        self.average_fitness = 0
+        self.best_fitness = 0
+
 
     def crossover_genomes(self, n1, n2):
         offspring_IN = {}  # {innovation-num: connection-string}
@@ -50,7 +115,7 @@ class Population:
             for in_num in n1_excess_genes:  # iterate all n1 exces-genes
                 offspring_IN[in_num] = n1.innovation_nums[in_num]
                 offspring_weights[in_num] = n1.weights[in_num] 
-        if n2.fitness > n1.fitness:
+        elif n2.fitness > n1.fitness:
             for in_num in n2_disjoint_genes:  # iterate all n2 disjoint-genes
                 offspring_IN[in_num] = n2.innovation_nums[in_num]
                 offspring_weights[in_num] = n2.weights[in_num] 
@@ -58,13 +123,16 @@ class Population:
                 offspring_IN[in_num] = n2.innovation_nums[in_num]
                 offspring_weights[in_num] = n2.weights[in_num] 
         else:  # when fitness is equal random decision is made to inherit all excess/disjoint from either parent
+            #print("yello")
             rand_genome = random.choice([n1, n2]) 
             if rand_genome == n1:
+                #print("bello")
                 all_disjoint_excess_genes_from_a_genome = n1_disjoint_genes+n1_excess_genes
                 for in_num in all_disjoint_excess_genes_from_a_genome:
                     offspring_IN[in_num] = n1.innovation_nums[in_num] # save randomly chosen genomes innovation-num:"source->target"
                     offspring_weights[in_num] = n1.weights[in_num]   # save randomly chosen genomes innovation-num:weight-value
-            if rand_genome == n2:
+            elif rand_genome == n2:
+                #print("dello")
                 all_disjoint_excess_genes_from_a_genome = n2_disjoint_genes+n2_excess_genes
                 for in_num in all_disjoint_excess_genes_from_a_genome:
                     offspring_IN[in_num] = n2.innovation_nums[in_num] # save randomly chosen genomes innovation-num:"source->target"
@@ -72,9 +140,9 @@ class Population:
             
         offspring = NeatNeuralNetwork(innovation_nums=offspring_IN, input_nodes=n1.input_nodes,output_nodes=n1.output_nodes, bias_node_id=n1.bias_node_id, 
                                seed_individual=False)
-        print(f"{offspring.innovation_nums=}")
-        print(f"{offspring.weights=}")
-        return
+        # print(f"{offspring.innovation_nums=}")
+        # print(f"{offspring.weights=}")
+        return offspring
 
     def find_matching_genes(self, n1, n2): # order of genomes doesnt matter returns IN_nums common in both genomes
         matching_genes_IN_genes = []
@@ -124,18 +192,18 @@ class Population:
         return None
         
     def weight_mutation(self, n1):
+        #print("Weight-Mutation") # AOGFB
         # iterate all innovation-numbers of genome and add small random guassian distribution value to its weight value
         for in_num in n1.innovation_nums.keys():
             n1.weights[in_num] += random.gauss(0, 0.1)
         return n1
     
     def add_connection_mutation(self, n1):
+        #print("Add-Connection-Mutation") # AOGFB
         existing_connections = {}  # {target-node-id: [source1-id, source2-id], node1: [s1,s2,s3]|
-        nonexistent_connections = [] # list of tuples [ (source,target), (s,t)]
-        # topologically-sorted-node-ids: [1, 2, 3, 5, 6, 4], can we connect 5->4 but not 4-> because its a backward connection
-        print(f"top-sorted-nodes-{n1.all_nodes}")
+        nonexistent_connections = []  # list of tuples [ (source,target), (s,t)]
         
-        # populate exisitng connecitons dict
+        # populate existing connections dict
         for target_node_id, connection_arr in n1.connections.items():
             existing_connections[target_node_id] = []
             for connection_str in connection_arr:
@@ -146,12 +214,12 @@ class Population:
         
         # for each pair of nodes in topological order
         for i, source_node in enumerate(top_sorted_nodes):
-            # if source node is not input node 
+            # if source node is not an input node 
             if source_node not in n1.input_nodes:
-                # only consider target nodes that come after source in topological order
+                # only consider target nodes that come after source in topological order, every other node
                 for target_node in top_sorted_nodes[i+1:]:
-                    # skip if target node is an input node, cant go backward and have input as a target
-                    if target_node not in n1.input_nodes:
+                    # skip if target node is an input node or if both source and target are output nodes
+                    if target_node not in n1.input_nodes and not (source_node in n1.output_nodes and target_node in n1.output_nodes):
                         # check if this connection already exists
                         if target_node in existing_connections:
                             if source_node not in existing_connections[target_node]:
@@ -161,7 +229,7 @@ class Population:
                             # target node has no incoming connections at all
                             nonexistent_connections.append((source_node, target_node))
             else:  # if source node is an input node
-                # only consider non-input nodes as targets, becuse cant have (input, input)
+                # only consider non-input nodes as targets, because can't have (input, input)
                 for target_node in top_sorted_nodes[i+1:]:
                     if target_node not in n1.input_nodes:
                         if target_node in existing_connections:
@@ -170,38 +238,39 @@ class Population:
                         else:
                             nonexistent_connections.append((source_node, target_node))
 
-        print(f"{existing_connections=}")
-        print(f"{nonexistent_connections=}")
+        # If there are valid connections, select one randomly
+        if nonexistent_connections:
+            rand_connection = random.choice(nonexistent_connections)  # choose a random non-existent connection
+            #print(f"Random Connection: {rand_connection}")  # AOGFB
+            rand_source, rand_target = rand_connection[0], rand_connection[1]
+            new_innovation_num = n1.update_max_IN() + 1
 
-        # merge new connection
-        rand_connection = random.choice(nonexistent_connections)  # choose a random non-existent connection
-        print(f"Random Connection: {rand_connection}")
-        rand_source, rand_target = rand_connection[0], rand_connection[1]
-        new_innovation_num = n1.update_max_IN() + 1
+            n1.innovation_nums[new_innovation_num] = f"{rand_source}->{rand_target}"  # {in-num: "s->target"}
+            
+            n1.weights[new_innovation_num] = random.gauss(0, 0.1)
 
-        n1.innovation_nums[new_innovation_num] = f"{rand_source}->{rand_target}"  # {in-num: "s->target"}
+            # add connection to connections-dict
+            if new_innovation_num not in n1.connections.keys():
+                n1.connections[new_innovation_num] = [f"{rand_source}_IN{new_innovation_num}"]
+            else:
+                n1.connections[new_innovation_num].append(f"{rand_source}_IN{new_innovation_num}")
         
-        n1.weights[new_innovation_num] = random.gauss(0, 0.1)
-
-        # add connection to connections-dict
-        if new_innovation_num not in n1.connections.keys():
-            n1.connections[new_innovation_num] = [f"{rand_source}_IN{new_innovation_num}"]
-        else:
-            n1.connections[new_innovation_num].append(f"{rand_source}_IN{new_innovation_num}")
-        # TBD: if we are adding a connection that is disabled instead of creating a new entry just enable the disbaled connection. 
         return n1
+
     
     def add_node_mutation(self, n1):
+        #print("Add-Node-Mutation") # AOGFB
         # after adding node, topologically sort all nodes again
         # run prepare-network again to comptue all of its connections
         
         random_IN_item = random.choice(list(n1.innovation_nums.items()))  # chose random connection-item in innovation-num
         random_innovation_num = random_IN_item[0]
         rand_source, rand_target = int(random_IN_item[1].split('->')[0]), int(random_IN_item[1].split('->')[1]) # access 1 for value to get s->t, TBD: make sure random chosen connection doesnt have D
-        print(f"**Random connection to split: {random_IN_item=}, {rand_source=}, {rand_target=}")
+        #print(f"**Random connection to split: {random_IN_item=}, {rand_source=}, {rand_target=}") # AOGFB
         
         # disable random connection via innovation-num
-        n1.innovation_nums[random_innovation_num] += "D"
+        # n1.innovation_nums[random_innovation_num] += "D"
+        del n1.innovation_nums[random_innovation_num]   # temporarily delete because teh above split not working for D in string
         
         # create new node and add it to all nodes
         new_node_id = n1.get_max_node_id() + 1
@@ -218,13 +287,13 @@ class Population:
         n1.weights[new_innovation_num2] = random.gauss(0, 0.1)  # set new-node->target-og weight to small value
 
         n1.prepare_network() # updates toplogical order of nodes with new-node, and sef.connections of each node, the sources of each target. 
-        print(f"**{new_innovation_num1=}, {new_innovation_num2=}")
+        #print(f"**{new_innovation_num1=}, {new_innovation_num2=}") # AOGFB
         return n1
 
 def main():
     test_crossover=False
     test_weight_mutation=False
-    test_add_connection_mutation=False
+    test_add_connection_mutation=True
     test_add_node_mutation=False
 
     p1 = Population(2)

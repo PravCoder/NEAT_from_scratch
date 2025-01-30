@@ -74,9 +74,9 @@ class NeatNeuralNetwork:
                 self.connections[int(target)].append(source_str)
 
 
-        print(f"Connections: {self.connections}\n")  # contains only hidden/output nodes
+        #print(f"Connections: {self.connections}\n")  # contains only hidden/output nodes
         self.all_nodes = self.get_topological_order()
-        print(f"all_nodes: {self.all_nodes}")
+        #print(f"all_nodes: {self.all_nodes}")
         return self.connections
     
     def update_max_IN(self):
@@ -226,7 +226,7 @@ class NeatNeuralNetwork:
 
         avg_error = total_error / len(X)  # compute error across all examples by taking average
         self.fitness = 1 / (1 + avg_error)  # compute fitness value low error -> high fitness
-        print(f"acts: {activations}")
+        #print(f"acts: {activations}")  # AOGFB
 
         
         
