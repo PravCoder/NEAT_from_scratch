@@ -7,7 +7,7 @@ Y = [[1, 0], [0, 1], [0, 1], [1, 0]]  # first out same, second out is diff [Same
 
 def main():
     pop_size = 50
-    total_generations = 100
+    total_generations = 200
     all_generations_fitness = []  # each element is average fitness of each generation
 
     input_nodes = [1,2]

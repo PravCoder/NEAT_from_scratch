@@ -73,11 +73,11 @@ class Population:
             #print("\n-Offspring Mutation Info") # AOGFB
             rand_num = random.random()
             if rand_num < 0.30: # 80% chance ->
-                self.add_connection_mutation(offspring)
+                self.weight_mutation(offspring)
             elif rand_num < 0.60: # 5% chance -> add connection
                 self.add_connection_mutation(offspring)
             elif rand_num < 1.00:  # 3% chance ->  add node mutation
-                self.add_node_mutation(offspring)
+                self.add_connection_mutation(offspring)
             
             offsprings.append(offspring)
             #print(f"{offspring.innovation_nums=}") # AOGFB
