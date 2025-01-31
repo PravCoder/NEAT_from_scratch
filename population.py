@@ -199,7 +199,12 @@ class Population:
         return n1
     
     def add_connection_mutation(self, n1):
-        #print("Add-Connection-Mutation") # AOGFB
+        print(f"-----ADD CONNECTION MUTATION-----")
+        print("--before")
+        print(f"{n1.innovation_nums=}")
+        print(f"{n1.weights=}")
+        print(f"{n1.connections=}")
+        print(f"{n1.all_nodes=}")
         existing_connections = {}  # {target-node-id: [source1-id, source2-id], node1: [s1,s2,s3]|
         nonexistent_connections = []  # list of tuples [ (source,target), (s,t)]
         
@@ -255,6 +260,12 @@ class Population:
             else:
                 n1.connections[new_innovation_num].append(f"{rand_source}_IN{new_innovation_num}")
         
+            print("--after")
+            print(f"new IN connection: {new_innovation_num}")
+            print(f"{n1.innovation_nums=}")
+            print(f"{n1.weights=}")
+            print(f"{n1.connections=}")
+            print(f"{n1.all_nodes=}\n")
         return n1
 
     
