@@ -73,7 +73,7 @@ class Population:
             #print("\n-Offspring Mutation Info") # AOGFB
             rand_num = random.random()
             if rand_num < 0.30: # 80% chance ->
-                self.add_connection_mutation(offspring)
+                self.weight_mutation(offspring)
             elif rand_num < 0.60: # 5% chance -> add connection
                 self.add_connection_mutation(offspring)
             elif rand_num < 1.00:  # 3% chance ->  add node mutation
@@ -259,19 +259,28 @@ class Population:
 
     
     def add_node_mutation(self, n1):
-        #print("Add-Node-Mutation") # AOGFB
+        print(f"-----ADD NODE MUTATION-----")
+        print("--before")
+        print(f"{n1.innovation_nums=}")
+        print(f"{n1.weights=}")
+        print(f"{n1.connections=}")
+        print(f"{n1.all_nodes=}")
         # after adding node, topologically sort all nodes again
         # run prepare-network again to comptue all of its connections
         
         random_IN_item = random.choice(list(n1.innovation_nums.items()))  # chose random connection-item in innovation-num
         random_innovation_num = random_IN_item[0]
+        if "D" in random_IN_item[1]:
+            return
+        
         rand_source, rand_target = int(random_IN_item[1].split('->')[0]), int(random_IN_item[1].split('->')[1]) # access 1 for value to get s->t, TBD: make sure random chosen connection doesnt have D
         #print(f"**Random connection to split: {random_IN_item=}, {rand_source=}, {rand_target=}") # AOGFB
         
         # disable random connection via innovation-num
-        # n1.innovation_nums[random_innovation_num] += "D"
-        del n1.innovation_nums[random_innovation_num]   # temporarily delete because teh above split not working for D in string
-        
+        n1.innovation_nums[random_innovation_num] += "D"
+        #del n1.innovation_nums[random_innovation_num]   # temporarily delete because teh above split not working for D in string
+        #del n1.weights[random_innovation_num]
+
         # create new node and add it to all nodes
         new_node_id = n1.get_max_node_id() + 1
         n1.all_nodes.append(new_node_id)
@@ -288,6 +297,15 @@ class Population:
 
         n1.prepare_network() # updates toplogical order of nodes with new-node, and sef.connections of each node, the sources of each target. 
         #print(f"**{new_innovation_num1=}, {new_innovation_num2=}") # AOGFB
+
+        print("--after")
+        print(f"IN to mutate split: {random_innovation_num}")
+        print(f"added node {new_node_id}")
+        print(f"new connections: {rand_source}->{new_node_id}->{rand_target}")
+        print(f"{n1.innovation_nums=}")
+        print(f"{n1.weights=}")
+        print(f"{n1.connections=}")
+        print(f"{n1.all_nodes=}\n")
         return n1
 
 def main():

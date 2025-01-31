@@ -58,6 +58,7 @@ class NeatNeuralNetwork:
     disabled connections like 2->4D in innovation_nums wont show up here. 
     """
     def prepare_network(self):
+        self.connections = {}
         for in_num, connection_str in list(self.innovation_nums.items()):
 
             if "D" in connection_str: # omit disabled connection, we they still remain in the genome innovation list for possiblity for reenabling
