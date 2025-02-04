@@ -66,18 +66,19 @@ class Population:
             
             # create offspring through crossover
             offspring = self.crossover_genomes(parent1, parent2)
+            print("does this print!!!!!")
             #print("-Offpring Original Info:")      # AOGFB
             #print(f"{offspring.innovation_nums=}") # AOGFB
             #print(f"{offspring.weights=}") # AOGFB
             
             #print("\n-Offspring Mutation Info") # AOGFB
             rand_num = random.random()
-            if rand_num < 0.30: # 80% chance ->
+            if rand_num < 0.30: # % chance ->
                 self.weight_mutation(offspring)
-            elif rand_num < 0.60: # 5% chance -> add connection
+            elif rand_num < 0.60: # % chance -> add connection
                 self.add_connection_mutation(offspring)
-            elif rand_num < 1.00:  # 3% chance ->  add node mutation
-                self.add_connection_mutation(offspring)
+            elif rand_num < 1.00:  #3% chance ->  add node mutation
+                self.add_node_mutation(offspring)
             
             offsprings.append(offspring)
             #print(f"{offspring.innovation_nums=}") # AOGFB
@@ -88,6 +89,7 @@ class Population:
         self.num_individuals = len(self.genome_networks)
         self.average_fitness = 0
         self.best_fitness = 0
+
 
 
     def crossover_genomes(self, n1, n2):
@@ -123,7 +125,7 @@ class Population:
                 offspring_IN[in_num] = n2.innovation_nums[in_num]
                 offspring_weights[in_num] = n2.weights[in_num] 
         else:  # when fitness is equal random decision is made to inherit all excess/disjoint from either parent
-            #print("yello")
+            print("yello")
             rand_genome = random.choice([n1, n2]) 
             if rand_genome == n1:
                 #print("bello")
@@ -137,11 +139,15 @@ class Population:
                 for in_num in all_disjoint_excess_genes_from_a_genome:
                     offspring_IN[in_num] = n2.innovation_nums[in_num] # save randomly chosen genomes innovation-num:"source->target"
                     offspring_weights[in_num] = n2.weights[in_num]   # save randomly chosen genomes innovation-num:weight-value
-            
+        
+        print(f"{n1.innovation_nums=}")
+        print(f"{n2.innovation_nums=}")
+        print(f"{offspring_IN=}")
+        print("IS THIS LAST THING THATS PRINTED")
         offspring = NeatNeuralNetwork(innovation_nums=offspring_IN, input_nodes=n1.input_nodes,output_nodes=n1.output_nodes, bias_node_id=n1.bias_node_id, 
                                seed_individual=False)
-        # print(f"{offspring.innovation_nums=}")
-        # print(f"{offspring.weights=}")
+        print(f"{offspring.innovation_nums=}")
+        print(f"{offspring.weights=}")
         return offspring
 
     def find_matching_genes(self, n1, n2): # order of genomes doesnt matter returns IN_nums common in both genomes
@@ -198,6 +204,8 @@ class Population:
             n1.weights[in_num] += random.gauss(0, 0.1)
         return n1
     
+    
+    
     def add_connection_mutation(self, n1):
         print(f"-----ADD CONNECTION MUTATION-----")
         print("--before")
@@ -245,6 +253,7 @@ class Population:
 
         # If there are valid connections, select one randomly
         if nonexistent_connections:
+            print("made connection")
             rand_connection = random.choice(nonexistent_connections)  # choose a random non-existent connection
             #print(f"Random Connection: {rand_connection}")  # AOGFB
             rand_source, rand_target = rand_connection[0], rand_connection[1]
@@ -282,8 +291,10 @@ class Population:
         random_IN_item = random.choice(list(n1.innovation_nums.items()))  # chose random connection-item in innovation-num
         random_innovation_num = random_IN_item[0]
         if "D" in random_IN_item[1]:
+            print("did not add node mutation")
             return
         
+        print("FLAG1")
         rand_source, rand_target = int(random_IN_item[1].split('->')[0]), int(random_IN_item[1].split('->')[1]) # access 1 for value to get s->t, TBD: make sure random chosen connection doesnt have D
         #print(f"**Random connection to split: {random_IN_item=}, {rand_source=}, {rand_target=}") # AOGFB
         
@@ -308,7 +319,6 @@ class Population:
 
         n1.prepare_network() # updates toplogical order of nodes with new-node, and sef.connections of each node, the sources of each target. 
         #print(f"**{new_innovation_num1=}, {new_innovation_num2=}") # AOGFB
-
         print("--after")
         print(f"IN to mutate split: {random_innovation_num}")
         print(f"added node {new_node_id}")

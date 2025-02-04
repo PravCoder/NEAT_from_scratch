@@ -40,16 +40,59 @@ main()
 # - key error in self.Z[cur_node] = self.A[sour
 
 """
-can you check my add connection method, remember input node cannot connect to another input node. An output node cannot connect to another output node. And a node cannot connect to a node creating a backwards cycle, just because there is a connection 4->5 doesnt mean you can connect 5->4. 
+LOG OF ERRORS:
 
-Add-Connection-Mutation
-self.innovation_nums={1: '1->3', 6: '5->3', 7: '1->6', 8: '6->5', 4: '2->4', 2: '1->4', 9: '5->6'}
-self.connections={3: ['1_IN1', '5_IN6'], 6: ['1_IN7', '5_IN9'], 5: ['6_IN8'], 4: ['2_IN4', '1_IN2']}
-self.all_nodes=[1, 3, 5, 6, 2, 4]
+1.
+Circular connection causing infinite loop when creating offspring object.
+offspring_IN={1: '1->3D', 2: '1->4', 3: '2->3', 4: '2->4', 5: '1->5', 6: '5->4', 7: '4->5'}
+IS THIS LAST THING THATS PRINTED
 
-Add-Node-Mutation
-node we just added: 7 + n1.all_nodes=[1, 2, 4, 6, 5, 3, 7]
-self.innovation_nums={3: '2->3', 6: '5->3', 2: '1->4', 7: '5->6', 8: '6->5', 4: '2->4'}
-self.connections={3: ['2_IN3', '5_IN6'], 4: ['1_IN2', '2_IN4'], 6: ['5_IN7'], 5: ['6_IN8']}
-self.all_nodes=[2, 3, 5, 1, 4, 6]
+2. 
+-----ADD NODE MUTATION-----
+--before
+n1.innovation_nums={1: '1->3D', 2: '1->4', 3: '2->3', 4: '2->4D', 5: '1->3', 6: '5->3'}
+n1.weights={1: np.float64(-0.5198719984532977), 2: np.float64(0.7583981677823782), 3: np.float64(-2.775146536892831), 4: np.float64(-1.7720150046806062), 5: 1, 6: 0.15185324061515662, 7: 0.10596686024509488, 8: 0.013710999243000274, 9: 1, 10: 0.035057312104959104}
+n1.connections={4: ['1_IN2'], 3: ['2_IN3', '1_IN5', '5_IN6']}
+n1.all_nodes=[1, 2, 4, 5, 3]
+did not add node mutation
+Traceback (most recent call last):
+  File "/Users/pravachanpatra/Documents/PYTHON/AI_ML_DL/NEAT_algorithm_scratch/main.py", line 36, in <module>
+    main()
+  File "/Users/pravachanpatra/Documents/PYTHON/AI_ML_DL/NEAT_algorithm_scratch/main.py", line 21, in main
+    p1.compute_pop_fitness(X, Y)
+  File "/Users/pravachanpatra/Documents/PYTHON/AI_ML_DL/NEAT_algorithm_scratch/population.py", line 22, in compute_pop_fitness
+    cur_genome.fitness_evaluation_XOR(X, Y)   # compute fitness of each genome, WARNING: fitness might be same for all genomes
+  File "/Users/pravachanpatra/Documents/PYTHON/AI_ML_DL/NEAT_algorithm_scratch/neat_network.py", line 218, in fitness_evaluation_XOR
+    self.forward_propagation(X_example)  # updates self.A activations with cur example input activations
+  File "/Users/pravachanpatra/Documents/PYTHON/AI_ML_DL/NEAT_algorithm_scratch/neat_network.py", line 198, in forward_propagation
+    output_Z_vector.append(self.Z[cur_node])  # add cur-output-node-z-value to vector in order
+KeyError: 3
+
+3. 
+-----ADD NODE MUTATION-----
+--before
+n1.innovation_nums={1: '1->3', 2: '1->4D', 3: '2->3', 4: '2->4', 5: '2->5', 6: '5->3', 7: '1->6'}
+n1.weights={1: np.float64(1.589542250006221), 2: np.float64(-1.847807272302246), 3: np.float64(0.8944675629739487), 4: np.float64(0.08698744706140611), 5: 1.2335814545951902, 6: -0.41381415704489244, 7: -0.18829470954200406, 8: 1, 9: -0.10461732207031534, 10: 0.16613124289520761}
+n1.connections={3: ['1_IN1', '2_IN3', '5_IN6'], 4: ['2_IN4'], 5: ['2_IN5'], 6: ['1_IN7']}
+n1.all_nodes=[1, 2, 4, 5, 6, 3]
+FLAG1
+^CTraceback (most recent call last):
+  File "/Users/pravachanpatra/Documents/PYTHON/AI_ML_DL/NEAT_algorithm_scratch/main.py", line 36, in <module>
+    main()
+  File "/Users/pravachanpatra/Documents/PYTHON/AI_ML_DL/NEAT_algorithm_scratch/main.py", line 23, in main
+    p1.create_offsprings(tournament_size=3, elite_size=2, gen_num=i)
+  File "/Users/pravachanpatra/Documents/PYTHON/AI_ML_DL/NEAT_algorithm_scratch/population.py", line 81, in create_offsprings
+    self.add_node_mutation(offspring)
+  File "/Users/pravachanpatra/Documents/PYTHON/AI_ML_DL/NEAT_algorithm_scratch/population.py", line 318, in add_node_mutation
+    n1.prepare_network() # updates toplogical order of nodes with new-node, and sef.connections of each node, the sources of each target. 
+  File "/Users/pravachanpatra/Documents/PYTHON/AI_ML_DL/NEAT_algorithm_scratch/neat_network.py", line 79, in prepare_network
+    self.all_nodes = self.get_topological_order()
+  File "/Users/pravachanpatra/Documents/PYTHON/AI_ML_DL/NEAT_algorithm_scratch/neat_network.py", line 132, in get_topological_order
+    if all(dep in processed for dep in dependencies[node]):
+KeyboardInterrupt
+Infinite loop 2 -> 5 -> 3 and 2 -> 3. 
+
+
+NOTE:
+if two parents have the same innovation number, they must have the same connection
 """
