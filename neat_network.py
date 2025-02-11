@@ -112,7 +112,7 @@ class NeatNeuralNetwork:
     activation of source-node we cant compute activation of cur-node. 
     """
     def get_topological_order(self):
-        dependencies = {node: set() for node in self.all_nodes}
+        dependencies = {node: set()  for node in self.all_nodes}
         
         for target, source_list in self.connections.items():
             for source_str in source_list:

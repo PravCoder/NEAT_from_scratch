@@ -44,8 +44,11 @@ LOG OF ERRORS:
 
 1.
 Circular connection causing infinite loop when creating offspring object.
-offspring_IN={1: '1->3D', 2: '1->4', 3: '2->3', 4: '2->4', 5: '1->5', 6: '5->4', 7: '4->5'}
+n1.innovation_nums={1: '1->3', 2: '1->4', 3: '2->3', 4: '2->4', 5: '1->5', 6: '5->4D', 7: '5->6', 8: '6->4'}
+n2.innovation_nums={1: '1->3', 2: '1->4D', 3: '2->3', 4: '2->4', 5: '1->5D', 6: '5->4', 7: '1->6', 8: '6->5'}
+offspring_IN={1: '1->3', 2: '1->4D', 3: '2->3', 4: '2->4', 5: '1->5D', 6: '5->4D', 7: '5->6', 8: '6->5'}
 IS THIS LAST THING THATS PRINTED
+NOTE: add function that checks if it creates circular conneciton before adding that gene everywhere in crossover where you inherit a genome. 
 
 2. 
 -----ADD NODE MUTATION-----
@@ -91,8 +94,9 @@ FLAG1
     if all(dep in processed for dep in dependencies[node]):
 KeyboardInterrupt
 Infinite loop 2 -> 5 -> 3 and 2 -> 3. 
-
+NOTE: cant connect to same node twice from same source. 
 
 NOTE:
 if two parents have the same innovation number, they must have the same connection
+TBD- duplicate connections not allowed
 """

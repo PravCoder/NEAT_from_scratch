@@ -204,8 +204,6 @@ class Population:
             n1.weights[in_num] += random.gauss(0, 0.1)
         return n1
     
-    
-    
     def add_connection_mutation(self, n1):
         print(f"-----ADD CONNECTION MUTATION-----")
         print("--before")
