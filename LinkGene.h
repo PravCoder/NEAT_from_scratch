@@ -12,7 +12,7 @@ struct LinkGene {
 
 
     LinkGene(int in_node, int output_node, double weight_val, bool enabled, int innov_num) 
-        : input_node(in_node), output_node(output_node), weight(weight_val), enabled(enabled), innovation_num(innov_num) {}
+        : input_node(in_node), output_node(output_node), weight(weight_val), enabled(enabled), innovation_num(innov_num) {} // constructor
 
 }
 

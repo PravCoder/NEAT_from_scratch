@@ -9,7 +9,7 @@ struct NodeGene {
     double activation;  // final output activation value of node
     double bias;        // bias value of this specific node
 
-    NodeGene(int node_id, string node_type) : {id(node_id), type(node_type), activation(0.0), bias(0.0)}
+    NodeGene(int node_id, string node_type) : {id(node_id), type(node_type), activation(0.0), bias(0.0)} // constructor
 
 
 }
