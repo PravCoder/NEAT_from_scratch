@@ -3,7 +3,7 @@
 #define Population_H
 
 /*
-Represents a collection of genomes/individuals. 
+Represents a collection of genomes/individuals. 1 Population object is created in main and is used, cleaned, created for all generations.
 */
 class Population {
     public:
@@ -14,16 +14,22 @@ class Population {
         int num_inputs;
         int num_outputs;
 
-        Population(int size, int numInputs, int numOutputs, int cr) : population_size(size), crossover_rate(cr) {
-            create_population();
+        Population(int size, int numInputs, int numOutputs, int cr, string initializer) : population_size(size), crossover_rate(cr) {
+            create_population(initializer);
         }
         
         // creates genome-objs for first-generation
-        void create_population() {
+        void create_population(string initializer) {
             for (int i=0; i<population_size; i++) {
                 Genome cur_genome = Genome(num_inputs, num_outputs);
                 genomes.push_back(cur_genome);
-                initialize_first_gen_genome_fully_connected(genomes.back()); // get the genome that we pushed to vector not the local one
+                if (initializer == "fully_connected") {
+                    initialize_first_gen_genome_fully_connected(genomes.back()); // get the genome that we pushed to vector not the local one
+                }
+                if (initializer == ) {
+                    
+                }
+                
             }
         }
 
@@ -45,6 +51,27 @@ class Population {
                     double weight = (rand() % 200 - 100) / 100.0;
                     genome.links.push_back(LinkGene(input_node_id, output_node_id, weight, true, next_innovation_num++));
                 }
+            }
+
+        }
+
+        void initialize_first_gen_genome_randomly_connected(Genome& genome) {
+            // iterate number of input/output nodes and create node-gene-obj, add to this genome.ndoes
+            for (int i=0; i<num_inputs; i++) {
+                genome.nodes.push_back(NodeGene(i, "input"));  // pass in node-id & type
+            }
+            for (int i=0; i<num_outputs; i++) {
+                genome.nodes.push_back(NodeGene(num_inputs+i, "output")); // output-node-id is num-inputs plus ith 
+            }
+            
+            int attempt_link = 4;  // the number of times we will randomly try initlize a link between the input & output nodes
+            genome.set_input_output_node_ids();
+            for (int i=0; i<attempt_link; i++) {
+                // pick random input-node-id from genome
+                // pick random output-node-id from gneome
+
+                // check if link between those nodes already exists, by iterating links of genome and checking link.input, link.output
+                // if link doesnt exist create link-obj and add to links.
             }
 
         }

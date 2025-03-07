@@ -4,8 +4,8 @@
 
 
 struct LinkGene {
-    int input_node;
-    int output_node;
+    int input_node;   // source-node-id
+    int output_node;  // target-node-id
     double weight;
     bool enabled;
     int innovation_num; // only links have innovation numbres, nodes do not

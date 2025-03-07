@@ -14,8 +14,23 @@ class Genome {
         vector<NodeGene> nodes:
         vector<LinkGene> links;
 
+        vector<int> input_node_ids;
+        vector<int> output_node_ids;
+
+
         // constructor takes in number of inputs/outputs
-        Genome(int numInputs, int numOutputs) : num_inputs(numInputs), num_outputs(num_outputs) 
+        Genome(int numInputs, int numOutputs) : num_inputs(numInputs), num_outputs(num_outputs)  {}
+
+        void set_input_output_node_ids() {
+            for (int i=0; i<nodes.size(); i++) {
+                if (nodes[i].type == "input") {
+                    input_node_ids.push_back(nodes[i].id);
+                }
+                if (nodes[i].type == "output") {
+                    output_node_ids.push_back(nodes[i].id);
+                }
+            }
+        }
         
 
     
