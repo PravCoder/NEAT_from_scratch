@@ -9,7 +9,7 @@ int main() {
     double crossover_rate = 0.3;
 
     Population p1 = Population(population_size, network_inputs, network_outputs, crossover_rate, "fully_connected");
-
+    p1.show_pop();
 }
 
 /*

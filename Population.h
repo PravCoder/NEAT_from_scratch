@@ -87,6 +87,13 @@ class Population {
 
         }
 
+        void show_pop() {
+            cout << "Population size: " << population_size << endl;
+            for (int i=0; i<population_size; i++) {
+                genomes[i].show();
+            }
+        }
+
 };
 
 

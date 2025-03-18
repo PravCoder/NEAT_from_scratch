@@ -36,6 +36,30 @@ class Genome {
                 }
             }
         }
+
+        void show() {
+            cout << "genome in: " << num_inputs << " outs: " << num_outputs << endl;
+            string node_str = "";
+            for (int i=0; i<nodes.size(); i++) {
+                node_str += to_string(nodes[i].id);
+                if (nodes[i].type == "input") node_str += "-inp";
+                if (nodes[i].type == "output") node_str += "-out";
+                if (i < nodes.size() - 1) node_str += ", ";
+                
+            }
+            cout << "   nodes: " << node_str << endl;
+
+            string links_str = "";
+            cout << "   links: " << endl;
+            for (int i=0; i<links.size(); i++) {
+                string cur_str = "";
+                cur_str = to_string(links[i].input_node) + "->" + to_string(links[i].output_node) + "[IN=" + to_string(links[i].innovation_num) + "]";
+                if (i < links.size() - 1) node_str += ", ";
+                cout <<  "   " <<cur_str << endl;
+            }
+            
+            
+        }
         
 
     
