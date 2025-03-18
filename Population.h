@@ -1,6 +1,10 @@
-
+#include <vector> 
 #ifndef Population_H
 #define Population_H
+#include "Genome.h" 
+#include "NodeGene.h" 
+#include "LinkGene.h" 
+
 
 /*
 Represents a collection of genomes/individuals. 1 Population object is created in main and is used, cleaned, created for all generations.
@@ -14,7 +18,7 @@ class Population {
         int num_inputs;
         int num_outputs;
 
-        Population(int size, int numInputs, int numOutputs, int cr, string initializer) : population_size(size), crossover_rate(cr) {
+        Population(int size, int numInputs, int numOutputs, double cr, string initializer) : num_inputs(numInputs), num_outputs(numOutputs), population_size(size), crossover_rate(cr) {
             create_population(initializer);
         }
         
@@ -71,7 +75,7 @@ class Population {
 
             // iterate every input-node-id, iterate every output-node-id
             for (int i=0; i<num_inputs; i++) {
-                for (int j=0l j<num_outputs; j++) {
+                for (int j=0; j<num_outputs; j++) {
                     if ((double)rand() / RAND_MAX < connection_prob) {
                         int input_node_id = i;
                         int output_node_id = num_inputs+j;
@@ -83,7 +87,9 @@ class Population {
 
         }
 
-}
+};
 
 
 int Population::next_innovation_num = 0; // static variable thats local to population
+
+#endif 

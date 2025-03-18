@@ -1,6 +1,10 @@
-
+#include <vector> 
 #ifndef Genome_H
 #define Genome_H
+#define Population_H
+#include "Genome.h" 
+#include "NodeGene.h" 
+#include "LinkGene.h" 
 
 /*
 Represents a individual in population which is a network with nodes and links/
@@ -11,7 +15,7 @@ class Genome {
         int num_inputs; // number of input and output nodes
         int num_outputs;
         // nodes & connections
-        vector<NodeGene> nodes: // arr of node-gene-objs
+        vector<NodeGene> nodes; // arr of node-gene-objs
         vector<LinkGene> links; // arr of link-gene-objs
 
         vector<int> input_node_ids; // each element is an input-node-id
@@ -19,7 +23,7 @@ class Genome {
 
 
         // constructor takes in number of inputs/outputs
-        Genome(int numInputs, int numOutputs) : num_inputs(numInputs), num_outputs(num_outputs)  {}
+        Genome(int numInputs, int numOutputs) : num_inputs(numInputs), num_outputs(numOutputs)  {}
 
         // iterate all node-objs, if its a input-node add its id to input-node-ids same with output nodes
         void set_input_output_node_ids() {
@@ -35,7 +39,7 @@ class Genome {
         
 
     
-}
+};
 
 
 #endif 
