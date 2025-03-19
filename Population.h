@@ -4,6 +4,7 @@
 #include "Genome.h" 
 #include "NodeGene.h" 
 #include "LinkGene.h" 
+#include <map>
 
 
 /*
@@ -17,6 +18,9 @@ class Population {
         double crossover_rate; // probability value between 0-1, for example x% of the time a crossover happens and 100-x% a clone+mutation happens. TBD: what about crossover+mutation
         int num_inputs;
         int num_outputs;
+
+        // hashmap where each key is <source-node, target-node> connection value is its innovation-number, we need some link to the innovation number and its connection s->t.
+        map<pair<int, int>, int> innovation_nums_map;    
 
         Population(int size, int numInputs, int numOutputs, double cr, string initializer) : num_inputs(numInputs), num_outputs(numOutputs), population_size(size), crossover_rate(cr) {
             create_population(initializer);
@@ -38,6 +42,21 @@ class Population {
             }
         }
 
+        // either gets existing or creates a new innovation-number based on given connection
+        int get_innovation_number(int source_id, int target_id) {
+            pair<int, int> connection = make_pair(source_id, target_id);
+            
+            // if given connection exists in our map, return its innovation number value
+            if (innovation_nums_map.find(connection) != innovation_nums_map.end()) { 
+                return innovation_nums_map[connection];
+            } else {  // if given connection doesnt exist in our map, create a new innovation number and add it to our map. 
+                int new_innov_num = next_innovation_num++;
+                innovation_nums_map[connection] = new_innov_num; // add (connection, innov-num) pair to map
+                return innovation_nums_map[connection];
+            }
+
+        }
+
         // given empty-genome-obj initializes it by creating its nodes and fully connecting them
         // only called on the first generation of genomes to create their nodes/links, called per genome in population, we have this in population because we need the next-innovation number for every link
         void initialize_first_gen_genome_fully_connected(Genome& genome) {
@@ -48,6 +67,7 @@ class Population {
             for (int i=0; i<num_outputs; i++) {
                 genome.nodes.push_back(NodeGene(num_inputs+i, "output")); // output-node-id is num-inputs plus ith 
             }
+            genome.set_input_output_node_ids();
 
             // nested loop to connect every input-node to every output-node, create/add link-objs
             for (int i=0; i<num_inputs; i++) {
@@ -55,7 +75,8 @@ class Population {
                     int input_node_id = i; 
                     int output_node_id = num_inputs + j; // starts from last input-node-id
                     double weight = (rand() % 200 - 100) / 100.0;
-                    genome.links.push_back(LinkGene(input_node_id, output_node_id, weight, true, next_innovation_num++));
+                    int innov_num =  get_innovation_number(input_node_id, output_node_id);
+                    genome.links.push_back(LinkGene(input_node_id, output_node_id, weight, true, innov_num));
                 }
             }
 
@@ -80,7 +101,8 @@ class Population {
                         int input_node_id = i;
                         int output_node_id = num_inputs+j;
                         int weight = (rand() % 200 - 100) / 100.0;
-                        genome.links.push_back(LinkGene(input_node_id,output_node_id,weight,true, next_innovation_num++));
+                        int innov_num =  get_innovation_number(input_node_id, output_node_id);
+                        genome.links.push_back(LinkGene(input_node_id,output_node_id,weight,true, innov_num));
                     }
                 }
             }
