@@ -2,6 +2,8 @@
 using namespace std;
 #include "Population.h" 
 
+
+
 int main() {
     int population_size = 5;
     int network_inputs = 2;
@@ -13,12 +15,9 @@ int main() {
     // in initial population innovation numbers are just increment when they all should be the same. 
 }
 
-/*
-g++ -o main main.cpp
-./main
-*/
+
 
 /*
-TODO:
-- crossover func
+g++ -o tests tests.cpp
+./tests
 */

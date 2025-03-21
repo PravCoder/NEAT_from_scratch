@@ -1,4 +1,5 @@
 #include <vector> 
+#include <unordered_map>
 #ifndef Population_H
 #define Population_H
 #include "Genome.h" 
@@ -114,6 +115,39 @@ class Population {
             for (int i=0; i<population_size; i++) {
                 genomes[i].show();
             }
+        }
+
+        void crossover_genomes(Genome& parent1, Genome& parent2) {
+            Genome& better_parent = (parent1.fitness > parent2.fitness) ? parent1 : parent2;
+            Genome& lesser_parent = (parent1.fitness > parent2.fitness) ? parent1 : parent2;
+            // init offspring genome-obj
+            Genome offspring = Genome(better_parent.num_inputs, better_parent.num_inputs);
+            // inherit all nodes from better parent (there are other approaches)
+            for (int i=0; i<better_parent.nodes.size(); i++) {
+                offspring.nodes.push_back(better_parent.nodes[i]);
+            }
+            // create-map from innov-num to link-gene of lesser parent for quick lookup
+            lesser_parent.create_innovation_num_to_link_gene_map();
+            
+            for (int i=0; i<better_parent.links.size(); i++) {
+                LinkGene& better_link = better_parent.links[i];
+
+                // if innov-num of current link exists in the other lesser parent, then it is a matching gene
+                if (lesser_parent.genes_map.find(better_link.innovation_num) != lesser_parent.genes_map.end()) {
+                    // matching-gene randomly choose to inherit from either parent
+                    if (rand() % 2 == 0) { // inherit cur-link from better-parent
+                        offspring.links.push_back(better_link);
+                    } else {  
+                        offspring.links.push_back(lesser_parent.genes_map[better_link.innovation_num]);  // inherit cur-link from lesser-parent
+                    }
+                    
+                } else {  // if innov-num of current link does not exist in other lesser parent, then it is a disjoint or excess link
+                    offspring.links.push_back(better_link);
+                }
+
+            }
+            offspring.set_input_output_node_ids();
+            
         }
 
 };

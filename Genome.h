@@ -1,4 +1,5 @@
 #include <vector> 
+#include <unordered_map>
 #ifndef Genome_H
 #define Genome_H
 #define Population_H
@@ -21,6 +22,10 @@ class Genome {
         vector<int> input_node_ids; // each element is an input-node-id
         vector<int> output_node_ids; // each element is an output-node-id
 
+        int fitness;
+
+        unordered_map<int, LinkGene> genes_map; //  map from innovation-num to link-gene object for quick lookup
+
 
         // constructor takes in number of inputs/outputs
         Genome(int numInputs, int numOutputs) : num_inputs(numInputs), num_outputs(numOutputs)  {}
@@ -34,6 +39,13 @@ class Genome {
                 if (nodes[i].type == "output") {
                     output_node_ids.push_back(nodes[i].id);
                 }
+            }
+        }
+
+        // creates map from innov-num key to link-gene-obj for this genome, for fast lookup
+        void create_innovation_num_to_link_gene_map() {
+            for (int i=0; i<links.size(); i++) {
+                genes_map[links[i].innovation_num] = links[i]; // innovation-num-key to link-gene-obj-value
             }
         }
 
