@@ -7,7 +7,7 @@
 #include "LinkGene.h" 
 
 struct NodeGene {
-    int id;              // node-id, nodes do not have innovation numbers only links
+    int id;              // node-id, nodes do not have innovation numbers only links, important to differentiate between each node
     string type;        // input, hidden, or output
     double activation;  // final output activation value of node
     double bias;        // bias value of this specific node

@@ -3,6 +3,10 @@ using namespace std;
 #include "Population.h" 
 
 
+int crossover_test() {
+    Genome&
+}
+
 
 int main() {
     int population_size = 5;

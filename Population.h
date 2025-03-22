@@ -47,7 +47,7 @@ class Population {
         int get_innovation_number(int source_id, int target_id) {
             pair<int, int> connection = make_pair(source_id, target_id);
             
-            // if given connection exists in our map, return its innovation number value
+            // if given connection exists in our map, return that innovation number value
             if (innovation_nums_map.find(connection) != innovation_nums_map.end()) { 
                 return innovation_nums_map[connection];
             } else {  // if given connection doesnt exist in our map, create a new innovation number and add it to our map. 
@@ -101,7 +101,7 @@ class Population {
                     if ((double)rand() / RAND_MAX < connection_prob) {
                         int input_node_id = i;
                         int output_node_id = num_inputs+j;
-                        int weight = (rand() % 200 - 100) / 100.0;
+                        double weight = (rand() % 200 - 100) / 100.0;
                         int innov_num =  get_innovation_number(input_node_id, output_node_id);
                         genome.links.push_back(LinkGene(input_node_id,output_node_id,weight,true, innov_num));
                     }
@@ -119,9 +119,9 @@ class Population {
 
         void crossover_genomes(Genome& parent1, Genome& parent2) {
             Genome& better_parent = (parent1.fitness > parent2.fitness) ? parent1 : parent2;
-            Genome& lesser_parent = (parent1.fitness > parent2.fitness) ? parent1 : parent2;
+            Genome& lesser_parent = (parent1.fitness > parent2.fitness) ? parent2 : parent1;
             // init offspring genome-obj
-            Genome offspring = Genome(better_parent.num_inputs, better_parent.num_inputs);
+            Genome offspring = Genome(better_parent.num_inputs, better_parent.num_outputs);
             // inherit all nodes from better parent (there are other approaches)
             for (int i=0; i<better_parent.nodes.size(); i++) {
                 offspring.nodes.push_back(better_parent.nodes[i]);
@@ -140,14 +140,54 @@ class Population {
                     } else {  
                         offspring.links.push_back(lesser_parent.genes_map[better_link.innovation_num]);  // inherit cur-link from lesser-parent
                     }
-                    
                 } else {  // if innov-num of current link does not exist in other lesser parent, then it is a disjoint or excess link
                     offspring.links.push_back(better_link);
                 }
 
             }
-            offspring.set_input_output_node_ids();
+            offspring.set_input_output_node_ids(); 
+        }
+
+        void mutation_add_connection(Genome& offspring) {
+            int num_hidden = offspring.nodes.size() - (num_inputs + num_outputs);  // compute number of hidden nodes
+            int num_connections_possible = (num_inputs*num_outputs) + (num_inputs*num_hidden) + (num_hidden*num_outputs); // input->output, input->hidden, hidden->out
+            num_connections_possible += (num_hidden * (num_hidden - 1)) / 2;   // each hidden node can connect to all hidden nodes with higher indices
+            num_connections_possible -= offspring.links.size();   // minus the number of connections that already exist
             
+            const int MAX_ATTEMPTS = num_connections_possible * 5;
+            
+            // compile all of the input & hidden nodes because those are valid nodes for source-node
+            vector<int> input_hidden_node_indicies = offspring.get_input_and_hidden_nodes_indicies();
+            // compile all of the hidden & output nodes because those are valid nodes for target-node
+            vector<int> hidden_output_node_indicies = offspring.get_hidden_and_output_nodes_indicies();
+
+            for (int attempt=0; attempt<MAX_ATTEMPTS; attempt++) {
+                
+                int source_indx = input_hidden_node_indicies[rand() % input_hidden_node_indicies.size()];  // randomlly choose input/hidden-node for target
+                int target_indx = hidden_output_node_indicies[rand() % hidden_output_node_indicies.size()];   // randomlly choose hidden/output-node for target
+
+                NodeGene& source_node = offspring.nodes[source_indx];
+                NodeGene& target_node = offspring.nodes[target_indx];
+
+                // when trying to connect hidden->hidden if sources-id is more than targets-id its a cycle go to next attempt
+                if (source_node.type == "hidden" && target_node.type == "hidden" && source_node.id >= target_node.id) {
+                    continue;
+                }
+
+                // check if connection already exists, based on node-obj-ids deteremine if connection exists
+                if (offspring.does_connection_exist(source_node.id, target_node.id) == true) {
+                    continue;
+                }
+
+                // create new connection mutation
+                int new_innovation_num = get_innovation_number(source_node.id, target_node.id);
+                double new_weight = (rand() % 200 - 100) / 100.0;
+                offspring.links.push_back(LinkGene(source_node.id, target_node.id, new_weight, true, new_innovation_num));
+                return;
+
+            }
+
+
         }
 
 };

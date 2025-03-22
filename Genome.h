@@ -49,6 +49,35 @@ class Genome {
             }
         }
 
+        vector<int> get_input_and_hidden_nodes_indicies() {
+            vector<int> input_and_hidden_nodes;
+            for (int i=0; i<nodes.size(); i++) {
+                if (nodes[i].type == "input" || nodes[i].type == "hidden") {
+                    input_and_hidden_nodes.push_back(i);
+                }
+            }
+            return input_and_hidden_nodes;
+        }
+        vector<int> get_hidden_and_output_nodes_indicies() {
+            vector<int> hidden_and_output_nodes;
+            for (int i=0; i<nodes.size(); i++) {
+                if (nodes[i].type == "hidden" || nodes[i].type == "output") {
+                    hidden_and_output_nodes.push_back(i);
+                }
+            }
+            return hidden_and_output_nodes;
+        }
+
+        bool does_connection_exist(int source_id, int target_id) {  // note can also do by using genes-mapx
+            for (int i=0; i<links.size(); i++) {
+                LinkGene& cur_link = links[i];
+                if (cur_link.input_node == source_id && cur_link.output_node == target_id) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         void show() {
             cout << "genome in: " << num_inputs << " outs: " << num_outputs << endl;
             string node_str = "";
