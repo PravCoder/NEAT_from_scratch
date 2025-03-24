@@ -27,7 +27,7 @@ class Population {
             create_population(initializer);
         }
         
-        // creates genome-objs for first-generation
+        // creates genome-objs for initial-first-generation
         void create_population(string initializer) {
             // iterate the population-size
             for (int i=0; i<population_size; i++) {
@@ -155,6 +155,7 @@ class Population {
             num_connections_possible -= offspring.links.size();   // minus the number of connections that already exist
             
             const int MAX_ATTEMPTS = num_connections_possible * 5;
+            cout << "max_attempts: " << MAX_ATTEMPTS << endl;
             
             // compile all of the input & hidden nodes because those are valid nodes for source-node
             vector<int> input_hidden_node_indicies = offspring.get_input_and_hidden_nodes_indicies();
@@ -163,8 +164,8 @@ class Population {
 
             for (int attempt=0; attempt<MAX_ATTEMPTS; attempt++) {
                 
-                int source_indx = input_hidden_node_indicies[rand() % input_hidden_node_indicies.size()];  // randomlly choose input/hidden-node for target
-                int target_indx = hidden_output_node_indicies[rand() % hidden_output_node_indicies.size()];   // randomlly choose hidden/output-node for target
+                int source_indx = input_hidden_node_indicies[rand() % input_hidden_node_indicies.size()];  // randomlly choose input/hidden-node indx for target
+                int target_indx = hidden_output_node_indicies[rand() % hidden_output_node_indicies.size()];   // randomlly choose hidden/output-node indx for target
 
                 NodeGene& source_node = offspring.nodes[source_indx];
                 NodeGene& target_node = offspring.nodes[target_indx];

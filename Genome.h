@@ -78,6 +78,10 @@ class Genome {
             return false;
         }
 
+        void get_next_node_id() {
+            
+        }
+
         void show() {
             cout << "genome in: " << num_inputs << " outs: " << num_outputs << endl;
             string node_str = "";
