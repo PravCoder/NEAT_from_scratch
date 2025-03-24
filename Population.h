@@ -221,6 +221,24 @@ class Population {
 
         }
 
+        void mutation_modify_weights(Genome& offspring, bool show_info) {
+            for (int i=0; i<offspring.links.size(); i++) {
+                double before_weight = offspring.links[i].weight;
+                double rand_weight = get_random_gaussian_weight();
+                if (show_info) {
+                    cout << "before weight: " <<before_weight<< ", after weight: " << offspring.links[i].weight + rand_weight << endl;
+                }
+                offspring.links[i].weight = offspring.links[i].weight + rand_weight;
+            }
+        }
+
+        double get_random_gaussian_weight(double mean=0.0, double stddev=1.0) {
+            static std::random_device rd;  // Seed
+            static std::mt19937 gen(rd()); // Mersenne Twister random number generator
+            std::normal_distribution<double> dist(mean, stddev); // Gaussian distribution
+            return dist(gen);
+        }
+
 };
 
 

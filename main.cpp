@@ -31,6 +31,14 @@ int main() {
     cout << "After:" << endl;
     p1.genomes[genome_indx].show();
 
+    cout << endl <<"\n---Mutating Genome - Weight Modification:---" << endl;
+    genome_indx = 2;
+    cout << "Before:" << endl;
+    p1.genomes[genome_indx].show();
+    p1.mutation_modify_weights(p1.genomes[genome_indx], true);
+    cout << "After:" << endl;
+    p1.genomes[genome_indx].show();
+
 }
 
 /*
