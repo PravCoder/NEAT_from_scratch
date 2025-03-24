@@ -78,8 +78,15 @@ class Genome {
             return false;
         }
 
-        void get_next_node_id() {
-            
+        int get_next_node_id() {
+            int max_id = -100;
+            for (int i=0; i<nodes.size(); i++) {
+                if (nodes[i].id > max_id) {
+                    max_id = nodes[i].id;
+                }
+            }
+            max_id += 1;
+            return max_id;
         }
 
         void show() {
@@ -98,7 +105,8 @@ class Genome {
             cout << "   links: " << endl;
             for (int i=0; i<links.size(); i++) {
                 string cur_str = "";
-                cur_str = to_string(links[i].input_node) + "->" + to_string(links[i].output_node) + "[IN=" + to_string(links[i].innovation_num) + "]";
+                string is_enabled = (links[i].enabled) ? "e" : "d";
+                cur_str = to_string(links[i].input_node) + "->" + to_string(links[i].output_node) + "[IN=" + to_string(links[i].innovation_num) + "]" +is_enabled;
                 if (i < links.size() - 1) node_str += ", ";
                 cout <<  "   " <<cur_str << endl;
             }

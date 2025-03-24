@@ -6,6 +6,8 @@
 #include "NodeGene.h" 
 #include "LinkGene.h" 
 #include <map>
+#include <algorithm> 
+#include <random>  
 
 
 /*
@@ -13,7 +15,7 @@ Represents a collection of genomes/individuals. 1 Population object is created i
 */
 class Population {
     public:
-        static int next_innovation_num;
+        static int next_innovation_num; // the current latest innovation number, increment to get next IN
         vector<Genome> genomes;  // arr of genome-objs for cur-population
         int population_size;
         double crossover_rate; // probability value between 0-1, for example x% of the time a crossover happens and 100-x% a clone+mutation happens. TBD: what about crossover+mutation
@@ -149,6 +151,7 @@ class Population {
         }
 
         void mutation_add_connection(Genome& offspring) {
+            srand(time(NULL));
             int num_hidden = offspring.nodes.size() - (num_inputs + num_outputs);  // compute number of hidden nodes
             int num_connections_possible = (num_inputs*num_outputs) + (num_inputs*num_hidden) + (num_hidden*num_outputs); // input->output, input->hidden, hidden->out
             num_connections_possible += (num_hidden * (num_hidden - 1)) / 2;   // each hidden node can connect to all hidden nodes with higher indices
@@ -187,7 +190,34 @@ class Population {
                 return;
 
             }
+        }
 
+        void mutation_add_node(Genome& offspring, bool show_info) {
+            // choose a random existing connection
+            int rand_link_index = rand() % offspring.links.size();
+            LinkGene& link_to_split = offspring.links[rand_link_index];    // reference, modified here is modified in offspring.links
+            // disable random existing link
+            link_to_split.enabled = false;
+            
+            // create new-node-obj passing in new id and its always a hidden-node
+            NodeGene new_node = NodeGene(offspring.get_next_node_id(), "hidden");
+
+            // create new connection from original-source-node to new-node, weight set to 1, passing in new innovation number
+            LinkGene link_1 = LinkGene(link_to_split.input_node, new_node.id, 1, true, get_innovation_number(link_to_split.input_node, new_node.id));
+
+            // create new connection from new-node to original-target-node, weight same as link that was split, new innovation number
+            LinkGene link_2 = LinkGene(new_node.id, link_to_split.output_node, link_to_split.weight, true, get_innovation_number(new_node.id, link_to_split.output_node));
+
+            offspring.nodes.push_back(new_node);  // add new node-obj, all other nodes still exist
+            offspring.links.push_back(link_1);   // add 2 newly created links
+            offspring.links.push_back(link_2);
+
+
+            if (show_info) {
+                cout << "link_to_split: ";
+                link_to_split.show();
+                cout << "new-node: " << new_node.id << endl;
+            }
 
         }
 

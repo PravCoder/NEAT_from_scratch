@@ -12,7 +12,7 @@ int main() {
     cout << "Initial Population:" << endl;
     p1.show_pop();
 
-    cout << endl <<"Mutated Genome - Add Connection:" << endl;
+    cout << endl <<"---Mutating Genome - Add Connection:---" << endl;
     int genome_indx = 4;
     cout << "Before:" << endl;
     p1.genomes[genome_indx].show();
@@ -21,6 +21,16 @@ int main() {
     //p1.mutation_add_connection(p1.genomes[genome_indx]);
     //p1.mutation_add_connection(p1.genomes[genome_indx]);
     p1.genomes[genome_indx].show();
+
+
+    cout << endl <<"\n---Mutating Genome - Add Node:---" << endl;
+    genome_indx = 0;
+    cout << "Before:" << endl;
+    p1.genomes[genome_indx].show();
+    p1.mutation_add_node(p1.genomes[genome_indx], true);
+    cout << "After:" << endl;
+    p1.genomes[genome_indx].show();
+
 }
 
 /*
@@ -34,6 +44,9 @@ TODO:
 - mutations, when to do?
 - forward pass, fitness func
 - create pop-func called evolve which is the evolutionary loop
+
+BUG:
+- link-to-split print is 0->0, cycle to itself input node when printing link-to-split in add node mutation func test
 */
 
 /*

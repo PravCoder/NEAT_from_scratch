@@ -24,4 +24,6 @@ int main() {
 /*
 g++ -o tests tests.cpp
 ./tests
+g++ -o tests tests.cpp && ./tests
+
 */
