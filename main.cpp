@@ -17,7 +17,7 @@ g++ -std=c++11 -o main main.cpp && ./main
 TODO:
 - activation func in forward pass
 - fitness func
-- create pop-func called evolve_loop which is the evolutionary loop
+- create pop-func called evolve_loop which is the evolutionary loop, chose best networks, cross over, create next popualtion, evaluate their fitness loop
 
 BUG:
 - link-to-split print is 0->0, cycle to itself input node when printing link-to-split in add node mutation func test

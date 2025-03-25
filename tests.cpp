@@ -62,12 +62,12 @@ void forward_prop_single_example_xor_test() {
     vector<double> y_2 = {1};
 
     cout << "\n---Forward Prop Single Example xor Test---" << endl;
-    int genome_indx = 3;
+    int genome_indx = 2;
     Genome& genome = p1.genomes[genome_indx];
     genome.show();
     genome.show_weights();
-    vector<double> y_hat = genome.forward_propagate_single_example(x_1);
-    print_vector(y_hat);
+    vector<double> y_hat = genome.forward_propagate_single_example(x_2); // something may be wrong with forward prop where the activations are always 0.5 because some input isnt connected to a output, or output doesnt have any connections to it. Outputs activations array maybe out of order 
+    print_vector(y_hat);  // can check calculation by hand
     
 }
 

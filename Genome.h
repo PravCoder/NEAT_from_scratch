@@ -97,23 +97,46 @@ class Genome {
         */
         vector<double> forward_propagate_single_example(vector<double> X) {
             vector<double> y_hat;
-            for (int i=0; i<nodes.size(); i++) {  // iterate all nodes
-                NodeGene& cur_node = nodes[i];  
-                if (cur_node.type == "input") {
-                    cur_node.activation = X[i];  // activation of input-node is just input value, in nodes input-nodes are ordered, input-values are also ordered in same way in X.
-                } else {                         // else its a hidden or output node
-                    vector<LinkGene> target_links_of_node = get_links_of_target_node(cur_node.id);  // get all links whose output-node is cur-node
-                    for (int j=0; j<target_links_of_node.size(); j++) {                             // iterate these links and compute weighted-sum of cur-link, aggregate these sums into the cur-node activation
-                        LinkGene cur_link = target_links_of_node[j];
-                        if (cur_link.enabled == true) {
-                            cur_node.activation += (cur_link.weight * get_node_via_id(cur_link.input_node).activation);
-                        }
-                    }
-                    if (cur_node.type == "output") {
-                        y_hat.push_back(cur_node.activation);
+
+            // reset all activations to 0
+            for (int i = 0; i < nodes.size(); i++) {if (nodes[i].type != "input") {nodes[i].activation = 0.0;}}
+            
+            // set input node activations to x-input-values using input-node-ids
+            for (int i=0; i<input_node_ids.size(); i++) {
+                NodeGene& cur_input_node = get_node_via_id(input_node_ids[i]);
+                
+                cur_input_node.activation = X[i];
+                //cout << "is this input node getting set id: " <<cur_input_node.id << ", activation: " <<cur_input_node.activation << endl;
+            }
+
+            // iterate all nodes for feed-forward structure
+            for (int i=0; i<nodes.size(); i++) {
+                NodeGene& cur_node = nodes[i];
+                if (cur_node.type == "input") {  // if its a input-node skip because its activation is already set
+                    continue;
+                }
+                vector<LinkGene> target_links = get_links_of_target_node(cur_node.id); // get all links whose output-node is cur-node
+                double weighted_sum = 0.0;  // weighted-sum of cur-node
+                
+                // iterate these links whose target-node is cur-node
+                for (int j=0; j<target_links.size(); j++) {
+                    LinkGene& cur_link = target_links[j];
+                    if (cur_link.enabled == true) { // if cur-link is enabled then compute its weighted-sum by multiplying its weight and the activation of that links source-node
+                        //cout << "this a weight " << cur_link.weight << ", this a act " << get_node_via_id(cur_link.input_node).activation << ", id "<<cur_link.input_node << endl;
+                        weighted_sum +=  (cur_link.weight * get_node_via_id(cur_link.input_node).activation);
                     }
                 }
+
+                weighted_sum += cur_node.bias;  // add bias
+                cur_node.activation = sigmoid(weighted_sum); // set activation of weighted-sum as activation of cur-node
             }
+
+            // get output values
+            for (int i=0; i<output_node_ids.size(); i++) {
+                NodeGene& cur_output_node = get_node_via_id(output_node_ids[i]);
+                y_hat.push_back(cur_output_node.activation);
+            }
+
             return y_hat;
         }
 
@@ -127,12 +150,16 @@ class Genome {
             return target_links;
         }
 
-        NodeGene get_node_via_id(int node_id) {   // returns node-obj given node-idx
+        NodeGene& get_node_via_id(int node_id) {   // returns node-obj given node-idx
             for (int i=0; i<nodes.size(); i++) {
                 if (nodes[i].id == node_id) {
                     return nodes[i];
                 }
             }
+        }
+
+        double sigmoid(double z) {
+            return 1.0 / (1.0 + exp(-z));
         }
 
         void show() {
