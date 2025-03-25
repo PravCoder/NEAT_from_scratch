@@ -63,6 +63,7 @@ class Population {
         // given empty-genome-obj initializes it by creating its nodes and fully connecting them
         // only called on the first generation of genomes to create their nodes/links, called per genome in population, we have this in population because we need the next-innovation number for every link
         void initialize_first_gen_genome_fully_connected(Genome& genome) {
+            srand(time(NULL)); // put this everytime you want to do something random
             // iterate number of input/output nodes and create node-gene-obj, add to this genome.ndoes
             for (int i=0; i<num_inputs; i++) {
                 genome.nodes.push_back(NodeGene(i, "input"));  // pass in node-id & type
@@ -87,6 +88,7 @@ class Population {
 
         // given empty-genome-obj initializes it by creating its node and 
         void initialize_first_gen_genome_randomly_connected(Genome& genome, double connection_prob = 0.5) {
+            srand(time(NULL));
             // iterate number of input/output nodes and create node-gene-obj, add to this genome.ndoes
             for (int i=0; i<num_inputs; i++) {
                 genome.nodes.push_back(NodeGene(i, "input"));  // pass in node-id & type

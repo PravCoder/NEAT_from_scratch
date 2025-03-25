@@ -3,20 +3,84 @@ using namespace std;
 #include "Population.h" 
 
 
-int crossover_test() {
-    Genome&
+void print_vector(const vector<double>& vec) {
+    cout << "[ ";
+    for (size_t i = 0; i < vec.size(); i++) {
+        cout << vec[i];
+        if (i < vec.size() - 1) cout << ", ";  // Avoid trailing comma
+    }
+    cout << " ]" << endl;
 }
 
 
-int main() {
-    int population_size = 5;
-    int network_inputs = 2;
-    int network_outputs = 2;
-    double crossover_rate = 0.3;
+int population_size = 5;
+int network_inputs = 2;
+int network_outputs = 2;
+double crossover_rate = 0.3;
+Population p1 = Population(population_size, network_inputs, network_outputs, crossover_rate, "rand_connected"); // rand_connnected, fully_connected
 
-    Population p1 = Population(population_size, network_inputs, network_outputs, crossover_rate, "fully_connected"); // rand_connnected, fully_connected
+void add_connection_test(){
+    cout << endl <<"---Mutating Genome - Add Connection:---" << endl;
+    int genome_indx = 4;
+    cout << "Before:" << endl;
+    p1.genomes[genome_indx].show();
+    cout << "After:" << endl;
+    p1.mutation_add_connection(p1.genomes[genome_indx]);
+    //p1.mutation_add_connection(p1.genomes[genome_indx]);
+    //p1.mutation_add_connection(p1.genomes[genome_indx]);
+    p1.genomes[genome_indx].show();
+}
+
+void add_node_test() {
+    cout << endl <<"\n---Mutating Genome - Add Node:---" << endl;
+    int genome_indx = 4;
+    genome_indx = 0;
+    cout << "Before:" << endl;
+    p1.genomes[genome_indx].show();
+    p1.mutation_add_node(p1.genomes[genome_indx], true);
+    cout << "After:" << endl;
+    p1.genomes[genome_indx].show();
+}
+
+void weight_mutation_test() {
+    cout << endl <<"\n---Mutating Genome - Weight Modification:---" << endl;
+    int genome_indx = 4;
+    genome_indx = 2;
+    cout << "Before:" << endl;
+    p1.genomes[genome_indx].show();
+    p1.mutation_modify_weights(p1.genomes[genome_indx], true);
+    cout << "After:" << endl;
+    p1.genomes[genome_indx].show();
+}
+
+void forward_prop_single_example_xor_test() { 
+    // input values & labels
+    vector<double> x_1 = {0, 0};
+    vector<double> x_2 = {0, 1};
+
+    vector<double> y_1 = {0};
+    vector<double> y_2 = {1};
+
+    cout << "\n---Forward Prop Single Example xor Test---" << endl;
+    int genome_indx = 3;
+    Genome& genome = p1.genomes[genome_indx];
+    genome.show();
+    genome.show_weights();
+    vector<double> y_hat = genome.forward_propagate_single_example(x_1);
+    print_vector(y_hat);
+    
+}
+
+int main() {
+    // create population first
     p1.show_pop();
-    // in initial population innovation numbers are just increment when they all should be the same. 
+    // tests - pre evolution first gen
+    add_connection_test();
+    add_node_test();
+    weight_mutation_test();
+    forward_prop_single_example_xor_test();
+
+    return 0;
 }
 
 
@@ -25,5 +89,5 @@ int main() {
 g++ -o tests tests.cpp
 ./tests
 g++ -o tests tests.cpp && ./tests
-
+g++ -std=c++11 -o tests tests.cpp && ./tests
 */

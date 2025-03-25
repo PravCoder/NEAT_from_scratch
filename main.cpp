@@ -3,41 +3,6 @@ using namespace std;
 #include "Population.h" 
 
 int main() {
-    int population_size = 5;
-    int network_inputs = 2;
-    int network_outputs = 2;
-    double crossover_rate = 0.3;
-
-    Population p1 = Population(population_size, network_inputs, network_outputs, crossover_rate, "rand_connected"); // rand_connnected, fully_connected
-    cout << "Initial Population:" << endl;
-    p1.show_pop();
-
-    cout << endl <<"---Mutating Genome - Add Connection:---" << endl;
-    int genome_indx = 4;
-    cout << "Before:" << endl;
-    p1.genomes[genome_indx].show();
-    cout << "After:" << endl;
-    p1.mutation_add_connection(p1.genomes[genome_indx]);
-    //p1.mutation_add_connection(p1.genomes[genome_indx]);
-    //p1.mutation_add_connection(p1.genomes[genome_indx]);
-    p1.genomes[genome_indx].show();
-
-
-    cout << endl <<"\n---Mutating Genome - Add Node:---" << endl;
-    genome_indx = 0;
-    cout << "Before:" << endl;
-    p1.genomes[genome_indx].show();
-    p1.mutation_add_node(p1.genomes[genome_indx], true);
-    cout << "After:" << endl;
-    p1.genomes[genome_indx].show();
-
-    cout << endl <<"\n---Mutating Genome - Weight Modification:---" << endl;
-    genome_indx = 2;
-    cout << "Before:" << endl;
-    p1.genomes[genome_indx].show();
-    p1.mutation_modify_weights(p1.genomes[genome_indx], true);
-    cout << "After:" << endl;
-    p1.genomes[genome_indx].show();
 
 }
 
@@ -45,13 +10,14 @@ int main() {
 g++ -o main main.cpp
 ./main
 g++ -o main main.cpp && ./main
+g++ -std=c++11 -o main main.cpp && ./main
 */
 
 /*
 TODO:
-- mutations, when to do?
-- forward pass, fitness func
-- create pop-func called evolve which is the evolutionary loop
+- activation func in forward pass
+- fitness func
+- create pop-func called evolve_loop which is the evolutionary loop
 
 BUG:
 - link-to-split print is 0->0, cycle to itself input node when printing link-to-split in add node mutation func test

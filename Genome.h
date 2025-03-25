@@ -89,6 +89,52 @@ class Genome {
             return max_id;
         }
 
+        /* 
+        Forward pass of a network is for each node need to compute its activation. To compute a activation of a node
+        you get all of connections whose target-node is that node, then for each of these links multiply its weight value 
+        with the activation of that links source-node, and sum all of these. Disabled links to not contirbute activation of a node.
+        Each node has its own bias value that is added to its weighted sum - ignoring for now. Computes forward propgation for a single example input values so 1D vector of inputs for each input node, returns 1D vector of outputs for each output node.
+        */
+        vector<double> forward_propagate_single_example(vector<double> X) {
+            vector<double> y_hat;
+            for (int i=0; i<nodes.size(); i++) {  // iterate all nodes
+                NodeGene& cur_node = nodes[i];  
+                if (cur_node.type == "input") {
+                    cur_node.activation = X[i];  // activation of input-node is just input value, in nodes input-nodes are ordered, input-values are also ordered in same way in X.
+                } else {                         // else its a hidden or output node
+                    vector<LinkGene> target_links_of_node = get_links_of_target_node(cur_node.id);  // get all links whose output-node is cur-node
+                    for (int j=0; j<target_links_of_node.size(); j++) {                             // iterate these links and compute weighted-sum of cur-link, aggregate these sums into the cur-node activation
+                        LinkGene cur_link = target_links_of_node[j];
+                        if (cur_link.enabled == true) {
+                            cur_node.activation += (cur_link.weight * get_node_via_id(cur_link.input_node).activation);
+                        }
+                    }
+                    if (cur_node.type == "output") {
+                        y_hat.push_back(cur_node.activation);
+                    }
+                }
+            }
+            return y_hat;
+        }
+
+        vector<LinkGene> get_links_of_target_node(int target_node_id) {  // returns all the links whose output node is given node-id
+            vector<LinkGene> target_links;
+            for (int i=0; i<links.size(); i++) {
+                if (links[i].output_node == target_node_id) {
+                    target_links.push_back(links[i]);
+                }
+            }
+            return target_links;
+        }
+
+        NodeGene get_node_via_id(int node_id) {   // returns node-obj given node-idx
+            for (int i=0; i<nodes.size(); i++) {
+                if (nodes[i].id == node_id) {
+                    return nodes[i];
+                }
+            }
+        }
+
         void show() {
             cout << "genome in: " << num_inputs << " outs: " << num_outputs << endl;
             string node_str = "";
@@ -110,8 +156,16 @@ class Genome {
                 if (i < links.size() - 1) node_str += ", ";
                 cout <<  "   " <<cur_str << endl;
             }
-            
-            
+        }
+
+        void show_weights() {
+            create_innovation_num_to_link_gene_map();  // make sure this map is created
+            cout << "   weights:" << endl;
+            for (auto it = genes_map.begin(); it != genes_map.end(); ++it) {
+                int innov_num = it->first;
+                LinkGene& link = it->second;
+                cout << "   [IN=" << innov_num << "]-"<<link.weight << endl;
+            }
         }
         
 
