@@ -38,6 +38,7 @@ void add_node_test() {
     cout << "Before:" << endl;
     p1.genomes[genome_indx].show();
     p1.mutation_add_node(p1.genomes[genome_indx], true);
+    p1.mutation_add_node(p1.genomes[genome_indx], true);
     cout << "After:" << endl;
     p1.genomes[genome_indx].show();
 }
@@ -65,10 +66,32 @@ void forward_prop_single_example_xor_test() {
     int genome_indx = 2;
     Genome& genome = p1.genomes[genome_indx];
     genome.show();
-    genome.show_weights();
+    // p1.mutation_add_node(genome, true);
+    genome.show_weights();                                                // output may be [0.5, 0.5] if no input-node is connected to anything like a hidden or output node for sigmoid
     vector<double> y_hat = genome.forward_propagate_single_example(x_2); // something may be wrong with forward prop where the activations are always 0.5 because some input isnt connected to a output, or output doesnt have any connections to it. Outputs activations array maybe out of order 
-    print_vector(y_hat);  // can check calculation by hand
+    print_vector(y_hat);  // can check calculation by hand using network topology, weights, activation funcs, and input example.
     
+}
+
+void fitness_func_xor_test() {
+    vector<vector<double>> X = {
+        {0, 0},  
+        {0, 1},  
+        {1, 0},  
+        {1, 1}  
+    };
+    vector<vector<double>> Y = {
+        {0},     
+        {1},     
+        {1},    
+        {0}     
+    };
+    int genome_indx = 2;
+    Genome& genome = p1.genomes[genome_indx];
+    double fitness = p1.compute_fitness_xor(X, Y, genome);
+    cout << "\n---Fitness Function XOR Test---" << endl;
+    genome.show();
+    cout << "fitness: " << genome.fitness  << endl;
 }
 
 int main() {
@@ -79,6 +102,7 @@ int main() {
     add_node_test();
     weight_mutation_test();
     forward_prop_single_example_xor_test();
+    fitness_func_xor_test();
 
     return 0;
 }

@@ -234,6 +234,32 @@ class Population {
             }
         }
 
+        /*
+        Given X which is all the examples in your dataset, and Y which all the labels for your each example in X, and an genome-obj.
+        Goes through each example and feed forwards into the genomes network and gets its predictions and uses the labels in a fitness equation to compute that genomes fitness.
+        Higher the fitness the better genome is performing.
+        */
+        double compute_fitness_xor(vector<vector<double>> X, vector<vector<double>> Y, Genome& genome) {
+            double total_error = 0.0;
+            
+            for (int i=0; i<X.size(); i++) {   // iterate every example
+                vector<double> cur_example = X[i];  // get cur-example inputs
+                vector<double> prediction_cur_example = genome.forward_propagate_single_example(cur_example); // pass cur-example-inputs into network get predictions vector for output nodes
+                
+                double example_error = 0.0;  // error of current example
+                for (int j=0; j<prediction_cur_example.size(); j++) {          // iterate all predictions so for each output node
+                    double error = prediction_cur_example[j] - Y[i][j];            // compute error of current output node, add to total-example-error
+                    example_error += error*error; 
+                }
+
+                total_error += example_error;  // add total-example-error to total error after computing error of cur-example
+            }
+
+            double fitness = 1.0 / (1.0 + total_error); // convert error across all examples into fitness value
+            genome.fitness = fitness;
+            return fitness;
+        }
+
         double get_random_gaussian_weight(double mean=0.0, double stddev=1.0) {
             static std::random_device rd;  // Seed
             static std::mt19937 gen(rd()); // Mersenne Twister random number generator

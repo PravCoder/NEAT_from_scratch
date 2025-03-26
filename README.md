@@ -14,6 +14,14 @@ NEAT Algorithm Steps:
 7. Calculate fitness of the individuals of the new population.
 8. Repeat from step 3 using the new population.
 
+Types of Mutations Implemented:
+1. Add Connection Mutation: where a random connection between 2 unconnected nodes is created.
+2. Add Node Mutation: where a random connection is selected and split with a new node, creating 2 new connections from the  source to the new node and from the new node to the target.
+
+Crossover of Neural Networks Process:
+1. 
+
+Code Structure: Population.h, Genome.h, NodeGene.h, LinkGene.h.
 
 02/06/2025: This implementation does not work, this is a failed attempt. 
 

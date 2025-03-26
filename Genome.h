@@ -22,7 +22,7 @@ class Genome {
         vector<int> input_node_ids; // each element is an input-node-id
         vector<int> output_node_ids; // each element is an output-node-id
 
-        int fitness;
+        double fitness;
 
         unordered_map<int, LinkGene> genes_map; //  map from innovation-num to link-gene object for quick lookup
 
