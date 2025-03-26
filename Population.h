@@ -21,12 +21,15 @@ class Population {
         double crossover_rate; // probability value between 0-1, for example x% of the time a crossover happens and 100-x% a clone+mutation happens. TBD: what about crossover+mutation
         int num_inputs;
         int num_outputs;
+        string initializer;
 
         // hashmap where each key is <source-node, target-node> connection value is its innovation-number, we need some link to the innovation number and its connection s->t.
-        map<pair<int, int>, int> innovation_nums_map;    
+        map<pair<int, int>, int> innovation_nums_map;   
+        
+        int num_generations;
 
-        Population(int size, int numInputs, int numOutputs, double cr, string initializer) : num_inputs(numInputs), num_outputs(numOutputs), population_size(size), crossover_rate(cr) {
-            create_population(initializer);
+        Population(int size, int numInputs, int numOutputs, double cr, string initializer, int num_generations) : num_inputs(numInputs), num_outputs(numOutputs), population_size(size), crossover_rate(cr), initializer(initializer), num_generations(num_generations) {
+            // create_population(initializer); // initial population is created here
         }
         
         // creates genome-objs for initial-first-generation
@@ -258,6 +261,20 @@ class Population {
             double fitness = 1.0 / (1.0 + total_error); // convert error across all examples into fitness value
             genome.fitness = fitness;
             return fitness;
+        }
+
+        /*
+        Loop to compute fitness and create next generation of genomes based on best performing genoms of previous population.
+        */
+        void evolutionary_loop(vector<vector<double>> X, vector<vector<double>> Y) {
+            create_population(initializer);  // if its the first generation create initial population
+            for (int i=0; i<num_generations; i++) {
+                cout << "-----Generation #" << i << "-----" << endl;
+                // compute fitness of population
+                // display fitness
+                // create offsprings
+                // load in new population
+            }
         }
 
         double get_random_gaussian_weight(double mean=0.0, double stddev=1.0) {

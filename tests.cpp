@@ -17,7 +17,21 @@ int population_size = 5;
 int network_inputs = 2;
 int network_outputs = 2;
 double crossover_rate = 0.3;
-Population p1 = Population(population_size, network_inputs, network_outputs, crossover_rate, "rand_connected"); // rand_connnected, fully_connected
+int num_generations = 5;
+Population p1 = Population(population_size, network_inputs, network_outputs, crossover_rate, "rand_connected", num_generations); // rand_connnected, fully_connected
+vector<vector<double>> X = {
+    {0, 0},  
+    {0, 1},  
+    {1, 0},  
+    {1, 1}  
+};
+vector<vector<double>> Y = {
+    {0},     
+    {1},     
+    {1},    
+    {0}     
+};
+
 
 void add_connection_test(){
     cout << endl <<"---Mutating Genome - Add Connection:---" << endl;
@@ -74,18 +88,6 @@ void forward_prop_single_example_xor_test() {
 }
 
 void fitness_func_xor_test() {
-    vector<vector<double>> X = {
-        {0, 0},  
-        {0, 1},  
-        {1, 0},  
-        {1, 1}  
-    };
-    vector<vector<double>> Y = {
-        {0},     
-        {1},     
-        {1},    
-        {0}     
-    };
     int genome_indx = 2;
     Genome& genome = p1.genomes[genome_indx];
     double fitness = p1.compute_fitness_xor(X, Y, genome);
@@ -95,14 +97,19 @@ void fitness_func_xor_test() {
 }
 
 int main() {
-    // create population first
-    p1.show_pop();
-    // tests - pre evolution first gen
-    add_connection_test();
-    add_node_test();
-    weight_mutation_test();
-    forward_prop_single_example_xor_test();
-    fitness_func_xor_test();
+    // create population initial population firstfirst
+    // p1.create_population("rand_connected");   // when testing just manually create initial pop
+    // p1.show_pop();
+    
+    // tests - pre evolution first gen so fitness of a genome with less links might be higher than a genome with more weights
+    // add_connection_test();
+    // add_node_test();
+    // weight_mutation_test();
+    // forward_prop_single_example_xor_test();
+    // fitness_func_xor_test();
+    
+    p1.evolutionary_loop(X, Y);
+
 
     return 0;
 }
