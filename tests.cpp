@@ -7,7 +7,7 @@ void print_vector(const vector<double>& vec) {
     cout << "[ ";
     for (size_t i = 0; i < vec.size(); i++) {
         cout << vec[i];
-        if (i < vec.size() - 1) cout << ", ";  // Avoid trailing comma
+        if (i < vec.size() - 1) cout << ", ";  // avoid trailing comma
     }
     cout << " ]" << endl;
 }
@@ -18,7 +18,8 @@ int network_inputs = 2;
 int network_outputs = 2;
 double crossover_rate = 0.3;
 int num_generations = 5;
-Population p1 = Population(population_size, network_inputs, network_outputs, crossover_rate, "rand_connected", num_generations); // rand_connnected, fully_connected
+int tournament_size = 2;
+Population p1 = Population(population_size, network_inputs, network_outputs, crossover_rate, "rand_connected", num_generations, tournament_size); // rand_connnected, fully_connected
 vector<vector<double>> X = {
     {0, 0},  
     {0, 1},  

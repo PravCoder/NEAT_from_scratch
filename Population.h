@@ -27,8 +27,12 @@ class Population {
         map<pair<int, int>, int> innovation_nums_map;   
         
         int num_generations;
+        double best_fitness;
+        double avr_fitness;
+        int tournament_size;
 
-        Population(int size, int numInputs, int numOutputs, double cr, string initializer, int num_generations) : num_inputs(numInputs), num_outputs(numOutputs), population_size(size), crossover_rate(cr), initializer(initializer), num_generations(num_generations) {
+
+        Population(int size, int numInputs, int numOutputs, double cr, string initializer, int num_generations, int tournament_size) : num_inputs(numInputs), num_outputs(numOutputs), population_size(size), crossover_rate(cr), initializer(initializer), num_generations(num_generations), tournament_size(tournament_size) {
             // create_population(initializer); // initial population is created here
         }
         
@@ -270,11 +274,54 @@ class Population {
             create_population(initializer);  // if its the first generation create initial population
             for (int i=0; i<num_generations; i++) {
                 cout << "-----Generation #" << i << "-----" << endl;
+
                 // compute fitness of population
-                // display fitness
-                // create offsprings
+                best_fitness = 0, avr_fitness = 0;   // reset gen-stats after every generation
+                
+                for (int i=0; i<genomes.size(); i++) {  // iterate all genomes compute its fitness using entire dataset and labels, update fitness states
+                    double cur_fitness = compute_fitness_xor(X, Y, genomes[i]);
+                    best_fitness = max(best_fitness, cur_fitness);
+                    avr_fitness += cur_fitness;
+                }
+                avr_fitness /= genomes.size();
+                show_gen_stats();  
+
+                // select best performing networks using some method - func
+                vector<Genome> selected_networks = select_best_networks_tournament();
+
+                // create offsprings by pairing these best networks,  mutate these offsprings randomlly - create_next_generation()
+                
                 // load in new population
             }
+        }
+
+        /*
+        Given number of genomes to select for reproduction, for each of these genomes create a randomly select x-tournament-size
+        genomes and among them select the genome with best fitness. For number of genomes of next generation randomlly select a group of genomes 
+        and add the genome with highest fitness to next population.
+        Promotes diversity through random sampling of groups. Promotes best networks by selecting highest fitness in each random group.
+        */
+        vector<Genome> select_best_networks_tournament() {
+            vector<Genome> selected_genomes;
+
+            int num_to_select = population_size;  // number of genomes to select for reproduction
+
+            for (int i=0; i<num_to_select; i++) {
+                int best_indx = rand() % population_size;
+                double cur_group_best_fitness = genomes[best_indx].fitness;
+                
+                // create a group for cur-genome we need to select
+                for (int j=1; j<tournament_size; j++) {
+                    int indx = rand() % population_size; // random indx to select random genome for this group
+                    if (genomes[indx].fitness > cur_group_best_fitness) {  // if cur-random-genome-selected-for-this-group 
+                        best_indx = indx;
+                        cur_group_best_fitness = genomes[best_indx].fitness;
+                    }
+                }
+                // add the best genome with highest to selected genomes for next gen reporduction
+                selected_genomes.push_back(genomes[best_indx]);
+            }
+            return selected_genomes;
         }
 
         double get_random_gaussian_weight(double mean=0.0, double stddev=1.0) {
@@ -282,6 +329,11 @@ class Population {
             static std::mt19937 gen(rd()); // Mersenne Twister random number generator
             std::normal_distribution<double> dist(mean, stddev); // Gaussian distribution
             return dist(gen);
+        }
+
+        void show_gen_stats() {
+            cout << "best_fitness: " << best_fitness << endl;
+            cout << "average_fitness: " << avr_fitness << endl;
         }
 
 };
