@@ -128,7 +128,7 @@ class Population {
             }
         }
 
-        void crossover_genomes(Genome& parent1, Genome& parent2) {
+        Genome crossover_genomes(Genome& parent1, Genome& parent2) {
             Genome& better_parent = (parent1.fitness > parent2.fitness) ? parent1 : parent2;
             Genome& lesser_parent = (parent1.fitness > parent2.fitness) ? parent2 : parent1;
             // init offspring genome-obj
@@ -157,6 +157,7 @@ class Population {
 
             }
             offspring.set_input_output_node_ids(); 
+            return offspring;
         }
 
         void mutation_add_connection(Genome& offspring) {
@@ -287,11 +288,13 @@ class Population {
                 show_gen_stats();  
 
                 // select best performing networks using some method - func
-                vector<Genome> selected_networks = select_best_networks_tournament();
+                vector<Genome> selected_genomes = select_best_networks_tournament();
 
-                // create offsprings by pairing these best networks,  mutate these offsprings randomlly - create_next_generation()
-                
-                // load in new population
+                // create offsprings by pairing these best networks crossing them over, mutate these offsprings randomlly - create_next_generation()
+                vector<Genome> next_generation_genomes = create_next_generation(selected_genomes);
+                genomes.clear();
+                // replace genomes with next_generation_genomes;
+                genomes = next_generation_genomes;
             }
         }
 
@@ -322,6 +325,59 @@ class Population {
                 selected_genomes.push_back(genomes[best_indx]);
             }
             return selected_genomes;
+        }
+
+        vector<Genome> create_next_generation(vector<Genome>& selected_genomes) { // returns vector<Genome> 
+            vector<Genome> next_generation_genomes;
+            // create offpsrings by pairing selected networks
+            vector<pair<Genome, Genome>> parent_pairs = get_parent_pairs(selected_genomes);
+            for (int i=0; i<parent_pairs.size(); i++) {
+                pair<Genome, Genome>& cur_pair = parent_pairs[i];
+                Genome cur_offspring = Genome(num_inputs, num_outputs);
+                // apply crossover rate, if crossvoer create offsprings from cur-pair-parents, else clone genome with higher fitness
+                if ((double)rand() / RAND_MAX < crossover_rate) {
+                    cur_offspring = crossover_genomes(cur_pair.first, cur_pair.second);
+
+                } else {
+                    cur_offspring = (cur_pair.first.fitness > cur_pair.second.fitness) ? cur_pair.first : cur_pair.second;
+                }
+                // randomly choose which mutation to do after crossing over or cloning
+                if ((double)rand() / RAND_MAX < 0.8) {
+                    mutation_modify_weights(cur_offspring, false); // should modify reference
+                }
+                else if ((double)rand() / RAND_MAX < 0.05) {
+                    mutation_add_node(cur_offspring, false);
+                }
+                else if ((double)rand() / RAND_MAX < 0.1) {
+                    mutation_add_connection(cur_offspring);
+                }
+
+                next_generation_genomes.push_back(cur_offspring);  // add offspring to new generation
+                // cout << "cur off: " << cur_pair.first.fitness << ", " << cur_pair.second.fitness << endl;
+            }
+            return next_generation_genomes;
+
+        }
+    
+        vector<pair<Genome, Genome>> get_parent_pairs(vector<Genome>& selected_genomes) {  
+            vector<pair<Genome, Genome>> parent_pairs; // just randomly pairs the selected-genomes.
+            int num_pairs = population_size / 2;
+
+            // for every pair we need to randomly select 2 genomes
+            for (int i=0; i<num_pairs; i++) {
+                int parent1_indx = rand() % selected_genomes.size();  //  select first parent
+
+                int parent2_indx = rand() % selected_genomes.size();  // while second parent is  equal to first keep randomly select it
+                while (parent2_indx == parent1_indx) {
+                    parent2_indx = rand() % selected_genomes.size();
+                }
+
+                Genome parent1 = selected_genomes[parent1_indx];
+                Genome parent2 = selected_genomes[parent2_indx];
+
+                parent_pairs.push_back(make_pair(parent1, parent2));  // add pair
+            }
+            return parent_pairs;
         }
 
         double get_random_gaussian_weight(double mean=0.0, double stddev=1.0) {

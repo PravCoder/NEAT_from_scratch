@@ -15,11 +15,15 @@ g++ -std=c++11 -o main main.cpp && ./main
 
 /*
 TODO:
-- fitness func
-- create pop-func called evolve_loop which is the evolutionary loop, chose best networks, cross over, create next popualtion, evaluate their fitness loop
+-  evolve_loop, elistiem preserving the best individuals unchanged
+- crossover test
 - different activation func in forward pass
 
 BUG:
+- max_attempts in add connection is negative
+- average fitness is nan
+- best_fitness is 0 even though genomes have higher
+- 
 - link-to-split print is 0->0, cycle to itself input node when printing link-to-split in add node mutation func test
 */
 

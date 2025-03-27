@@ -13,7 +13,7 @@ void print_vector(const vector<double>& vec) {
 }
 
 
-int population_size = 5;
+int population_size = 6;
 int network_inputs = 2;
 int network_outputs = 2;
 double crossover_rate = 0.3;
@@ -33,6 +33,9 @@ vector<vector<double>> Y = {
     {0}     
 };
 
+void crossover_test() {
+    
+}
 
 void add_connection_test(){
     cout << endl <<"---Mutating Genome - Add Connection:---" << endl;
