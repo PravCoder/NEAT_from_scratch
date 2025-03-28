@@ -34,6 +34,16 @@ vector<vector<double>> Y = {
 };
 
 void crossover_test() {
+    int i = 0;
+    int j = 2;
+    cout << endl <<"---Crossover Two Parent Genomes Test:---" << endl;
+    Genome offspring = p1.crossover_genomes(p1.genomes[i], p1.genomes[j]);
+    cout << "Parent 1: " << endl;
+    p1.genomes[i].show();
+    cout << "Parent 2: " << endl;
+    p1.genomes[j].show();
+    cout << "Offspring: " << endl;
+    offspring.show(); 
     
 }
 
@@ -101,9 +111,10 @@ void fitness_func_xor_test() {
 }
 
 int main() {
-    // create population initial population firstfirst
-    // p1.create_population("rand_connected");   // when testing just manually create initial pop
-    // p1.show_pop();
+    srand(time(NULL));
+    // create population initial population first
+    p1.create_population("rand_connected");   // when testing just manually create initial pop
+    p1.show_pop();
     
     // tests - pre evolution first gen so fitness of a genome with less links might be higher than a genome with more weights
     // add_connection_test();
@@ -112,7 +123,10 @@ int main() {
     // forward_prop_single_example_xor_test();
     // fitness_func_xor_test();
     
-    p1.evolutionary_loop(X, Y);
+    // evolutionary tests - post evolution tests
+    // p1.evolutionary_loop(X, Y);
+    // forward_prop_single_example_xor_test();
+    crossover_test();
 
 
     return 0;

@@ -15,20 +15,26 @@ g++ -std=c++11 -o main main.cpp && ./main
 
 /*
 TODO:
--  evolve_loop, elistiem preserving the best individuals unchanged
+- evolve_loop, do elistiem preserving the best individuals unchanged
 - crossover test
 - different activation func in forward pass
 
 BUG:
-- max_attempts in add connection is negative
-- average fitness is nan
-- best_fitness is 0 even though genomes have higher
-- 
+- best_fitness is 1: the networks found a loophole with no hidden nodes or links which tehcnically creates a 0 error which results in fitness of 1
+   initial population has no links.
+   initial population has same genomes with same links
+   crossing over 2 parents is creating is the same offspring
+- max_attempts in add connection is negative, max_attempts: -10 sometimes.
+- sometimes there is segmentation fault after this is printed: average_fitness: 0.2
 - link-to-split print is 0->0, cycle to itself input node when printing link-to-split in add node mutation func test
-*/
 
-/*
-*****NOTES****
+
+
+
+
+
+
+----------NOTES----------:
 
 Even when randomly-connected for intailizing first generation of genomes, same links should have innovation numbers across genomes:
 Population size: 5
