@@ -129,8 +129,28 @@ class Population {
         }
 
         Genome crossover_genomes(Genome& parent1, Genome& parent2) {
-            Genome& better_parent = (parent1.fitness > parent2.fitness) ? parent1 : parent2;
-            Genome& lesser_parent = (parent1.fitness > parent2.fitness) ? parent2 : parent1;
+            // choose the better parent, if fitness equal choose randomly
+            Genome* better_parent_ptr;  // use pointers instead of references so we can assign them later, 
+            Genome* lesser_parent_ptr;
+            if (parent1.fitness > parent2.fitness) {
+                better_parent_ptr = &parent1;
+                lesser_parent_ptr = &parent2;
+            } else if (parent2.fitness > parent1.fitness) {
+                better_parent_ptr = &parent2;
+                lesser_parent_ptr = &parent1;
+            } else {
+                if (rand() % 2 == 0) {
+                    better_parent_ptr = &parent1;
+                    lesser_parent_ptr = &parent2;
+                } else {
+                    better_parent_ptr = &parent2;
+                    lesser_parent_ptr = &parent1;  // set pointer equal address of object
+                }
+            }
+            // use dereferenced pointers to acess genome-objects
+            Genome& better_parent = *better_parent_ptr;
+            Genome& lesser_parent = *lesser_parent_ptr;
+
             // init offspring genome-obj
             Genome offspring = Genome(better_parent.num_inputs, better_parent.num_outputs);
             // inherit all nodes from better parent (there are other approaches)
@@ -286,6 +306,7 @@ class Population {
                 }
                 avr_fitness /= genomes.size();
                 show_gen_stats();  
+                // show_pop();
 
                 // select best performing networks using some method - func
                 vector<Genome> selected_genomes = select_best_networks_tournament();
