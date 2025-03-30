@@ -21,6 +21,7 @@ TODO:
 - get_best_solution() function which gets best performing genome from last generation
 
 THIS IS A LOG OF ALL THE SIGNIFICANT-ROADBLOCK-BUGS IVE ENCOUNTERED DURING THIS PROJECT, DOCUMENTING THEM AND WRITING DOWN MY THOUGHTS:
+- weights are exploding lol like in a standard network :( 
 - segmentation error, because empty network is being passed in mutation-add-node. Theres two ways a empty genome can occur one with 
   crossover and other because of memory management error. But for the crossover its parent that it receives is always empty, 
   suggesting that this empty network emrged from another mutation like add node 

@@ -12,13 +12,22 @@ void print_vector(const vector<double>& vec) {
     cout << " ]" << endl;
 }
 
+// Testing Hyperparameters
+// int population_size = 6; // make sure even
+// int network_inputs = 2;
+// int network_outputs = 2;
+// double crossover_rate = 0.3;
+// int num_generations = 10;
+// int tournament_size = 2;
 
-int population_size = 6; // make sure even
+// XOR Hyperparameters
+int population_size = 200; // make sure even
 int network_inputs = 2;
 int network_outputs = 2;
-double crossover_rate = 0.3;
-int num_generations = 10;
-int tournament_size = 2;
+double crossover_rate = 0.7;
+int num_generations = 200;
+int tournament_size = 3;
+
 Population p1 = Population(population_size, network_inputs, network_outputs, crossover_rate, "rand_connected", num_generations, tournament_size); // rand_connnected, fully_connected
 vector<vector<double>> X = {
     {0, 0},  

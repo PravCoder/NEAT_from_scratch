@@ -89,7 +89,7 @@ class Population {
                 for (int j=0; j<num_outputs; j++) {
                     int input_node_id = i; 
                     int output_node_id = num_inputs + j; // starts from last input-node-id
-                    double weight = (rand() % 200 - 100) / 100.0;
+                    double weight = get_random_uniform_weight();
                     int innov_num =  get_innovation_number(input_node_id, output_node_id);
                     genome.links.push_back(LinkGene(input_node_id, output_node_id, weight, true, innov_num));
                 }
@@ -116,7 +116,7 @@ class Population {
                     if ((double)rand() / RAND_MAX < connection_prob) {
                         int input_node_id = i;
                         int output_node_id = num_inputs+j;
-                        double weight = (rand() % 200 - 100) / 100.0;
+                        double weight = get_random_uniform_weight();
                         int innov_num =  get_innovation_number(input_node_id, output_node_id);
                         genome.links.push_back(LinkGene(input_node_id,output_node_id,weight,true, innov_num));
                     }
@@ -139,7 +139,7 @@ class Population {
                 // if cur-output-node doesnt have a connection to it, create a random connection to cur-output-node
                 if (has_connection == false) {
                     int input_node_id = genome.input_node_ids[rand() % genome.input_node_ids.size()];  // get a randomt input-node-id
-                    double weight = get_random_gaussian_weight();  // get random weight
+                    double weight = get_random_uniform_weight();  // get random weight
                     int innov_num = get_innovation_number(input_node_id, output_node_id); // get next innovation number for this new connection
                     // add this new link with  random-input-node-id and cur-output-node
                     genome.links.push_back(LinkGene(input_node_id, output_node_id, weight, true, innov_num));
@@ -262,7 +262,7 @@ class Population {
 
                 // create new connection mutation
                 int new_innovation_num = get_innovation_number(source_node.id, target_node.id);
-                double new_weight = (rand() % 200 - 100) / 100.0;
+                double new_weight = get_random_uniform_weight();
                 offspring.links.push_back(LinkGene(source_node.id, target_node.id, new_weight, true, new_innovation_num));
                 return;
 
@@ -316,7 +316,7 @@ class Population {
             // offspring.show();
             for (int i=0; i<offspring.links.size(); i++) {
                 double before_weight = offspring.links[i].weight;
-                double rand_weight = get_random_gaussian_weight();
+                double rand_weight = get_random_uniform_weight();
                 if (show_info) {
                     cout << "before weight: " <<before_weight<< ", after weight: " << offspring.links[i].weight + rand_weight << endl;
                 }
@@ -491,10 +491,16 @@ class Population {
             return num_empty;
         }
 
-        double get_random_gaussian_weight(double mean=0.0, double stddev=1.0) {
+        double get_random_gaussian_weight(double mean=0.0, double stddev=0.2) {
             static std::random_device rd;  // Seed
             static std::mt19937 gen(rd()); // Mersenne Twister random number generator
             std::normal_distribution<double> dist(mean, stddev); // Gaussian distribution
+            return dist(gen);
+        }
+        double get_random_uniform_weight() {
+            static std::random_device rd;  // Seed
+            static std::mt19937 gen(rd()); // Mersenne Twister random number generator
+            std::uniform_real_distribution<double> dist(-1.0, 1.0); // Uniform distribution between -1 and 1
             return dist(gen);
         }
 
