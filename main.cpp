@@ -18,8 +18,11 @@ TODO:
 - evolve_loop, do elistiem preserving the best individuals unchanged
 - crossover test
 - different activation func in forward pass
+- get_best_solution() function which gets best performing genome from last generation
 
-BUG:
+THIS IS A LOG OF ALL THE SIGNIFICANT-ROADBLOCK-BUGS IVE ENCOUNTERED DURING THIS PROJECT, DOCUMENTING THEM AND WRITING DOWN MY THOUGHTS:
+- segmentation error, because empty network is being passed in mutation-add-node. Theres two ways a empty genome can occur one with 
+  crossover and other because of memory management error. But for the crossover its parent that it receives is always empty, suggesting that this empty network emrged from another mutation like add node 
 - best_fitness is 1: the networks found a loophole with no hidden nodes or links which tehcnically creates a 0 error which results in fitness of 1
    somehow empty networks are being born after some generations even if first gen doesnt have empty networks
       maybe due to fitness function rewarding empty networks, incorrect crossover implementation.

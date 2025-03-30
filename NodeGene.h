@@ -1,7 +1,6 @@
 #include <vector> 
 #ifndef Node_Gene_H
 #define Node_Gene_H
-#define Population_H
 #include "Genome.h" 
 #include "NodeGene.h" 
 #include "LinkGene.h" 

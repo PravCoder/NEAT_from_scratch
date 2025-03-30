@@ -13,11 +13,11 @@ void print_vector(const vector<double>& vec) {
 }
 
 
-int population_size = 6;
+int population_size = 6; // make sure even
 int network_inputs = 2;
 int network_outputs = 2;
 double crossover_rate = 0.3;
-int num_generations = 5;
+int num_generations = 10;
 int tournament_size = 2;
 Population p1 = Population(population_size, network_inputs, network_outputs, crossover_rate, "rand_connected", num_generations, tournament_size); // rand_connnected, fully_connected
 vector<vector<double>> X = {
@@ -28,7 +28,7 @@ vector<vector<double>> X = {
 };
 vector<vector<double>> Y = {  
     {0, 1},  
-    {1, 0},    // first node is different
+    {1, 0},    // first node is different, second node is same, also for predictions
     {1, 0},  
     {0, 1}    
 };

@@ -183,7 +183,7 @@ class Population {
             }
 
             if (offspring.links.size() == 0) {
-                offspring.links = better_parent.links;
+                offspring = better_parent;
             }
             // offspring.set_input_output_node_ids(); 
             // if (offspring.links.size() == 0) {
@@ -199,6 +199,10 @@ class Population {
         }
 
         void mutation_add_connection(Genome& offspring) {
+            if (offspring.nodes.empty()) {
+                cerr << "Cannot add connection to empty network" << endl;
+                return;
+            }
             // cout << "----Mutation Add Connection---:" << endl;
             // srand(time(NULL));
             int num_hidden = offspring.nodes.size() - (num_inputs + num_outputs);  // compute number of hidden nodes
@@ -243,9 +247,13 @@ class Population {
         }
 
         void mutation_add_node(Genome& offspring, bool show_info) {
-            // cout << "----Mutation Add Node----:" << endl;
-            // cout << "before mutation: " << endl;
-            // offspring.show();
+            cout << "----Mutation Add Node----:" << endl;
+            cout << "before mutation: " << endl;
+            offspring.show();
+
+            if (offspring.nodes.size() == 0 || offspring.links.size() == 0) {
+                cerr << "Cannot add node to empty network - adding default connection first" << endl;
+            }
             // choose a random existing connection
             int rand_link_index = rand() % offspring.links.size();
             LinkGene& link_to_split = offspring.links[rand_link_index];    // reference, modified here is modified in offspring.links
@@ -341,9 +349,10 @@ class Population {
                 avr_fitness /= genomes.size();
                 show_gen_stats();  
                 // show_pop();
-
+                
                 // select best performing networks using some method - func
                 vector<Genome> selected_genomes = select_best_networks_tournament();
+
 
                 // create offsprings by pairing these best networks crossing them over, mutate these offsprings randomlly - create_next_generation()
                 vector<Genome> next_generation_genomes = create_next_generation(selected_genomes);
@@ -390,7 +399,6 @@ class Population {
             // create offpsrings by pairing selected networks
             vector<pair<Genome, Genome>> parent_pairs = get_parent_pairs(selected_genomes);
             for (int i=0; i<parent_pairs.size(); i++) {
-
                 pair<Genome, Genome>& cur_pair = parent_pairs[i];
                 Genome cur_offspring(num_inputs, num_outputs);
                 // apply crossover rate, if crossvoer create offsprings from cur-pair-parents, else clone genome with higher fitness
@@ -405,6 +413,7 @@ class Population {
                     mutation_modify_weights(cur_offspring, false); // should modify reference
                 }
                 if ((double)rand() / RAND_MAX < 0.05) {
+                    cout << "SUB7" << endl;
                     mutation_add_node(cur_offspring, false);
                 }
                 if ((double)rand() / RAND_MAX < 0.1) {

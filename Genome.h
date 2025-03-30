@@ -2,7 +2,6 @@
 #include <unordered_map>
 #ifndef Genome_H
 #define Genome_H
-#define Population_H
 #include "Genome.h" 
 #include "NodeGene.h" 
 #include "LinkGene.h" 
@@ -34,6 +33,20 @@ class Genome {
         Genome(const Genome& other) : num_inputs(other.num_inputs),num_outputs(other.num_outputs), nodes(other.nodes),links(other.links),input_node_ids(other.input_node_ids),output_node_ids(other.output_node_ids),fitness(other.fitness)
         {
         create_innovation_num_to_link_gene_map();
+        }
+
+        Genome& operator=(const Genome& other) {
+            if (this != &other) {
+                num_inputs = other.num_inputs;
+                num_outputs = other.num_outputs;
+                nodes = other.nodes;
+                links = other.links;
+                input_node_ids = other.input_node_ids;
+                output_node_ids = other.output_node_ids;
+                fitness = other.fitness;
+                create_innovation_num_to_link_gene_map();
+            }
+            return *this;
         }
 
         // iterate all node-objs, if its a input-node add its id to input-node-ids same with output nodes
@@ -105,6 +118,9 @@ class Genome {
         */
         vector<double> forward_propagate_single_example(vector<double> X) {
             vector<double> y_hat;
+            if (X.size() != input_node_ids.size()) {
+                cerr << "Input size mismatch!" << endl;
+            }
 
             // reset all activations to 0
             for (int i = 0; i < nodes.size(); i++) {if (nodes[i].type != "input") {nodes[i].activation = 0.0;}}
