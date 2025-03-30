@@ -30,8 +30,16 @@ class Genome {
         // constructor takes in number of inputs/outputs
         Genome(int numInputs, int numOutputs) : num_inputs(numInputs), num_outputs(numOutputs)  {}
 
+        //  copy constructor - copies given genome into current object
+        Genome(const Genome& other) : num_inputs(other.num_inputs),num_outputs(other.num_outputs), nodes(other.nodes),links(other.links),input_node_ids(other.input_node_ids),output_node_ids(other.output_node_ids),fitness(other.fitness)
+        {
+        create_innovation_num_to_link_gene_map();
+        }
+
         // iterate all node-objs, if its a input-node add its id to input-node-ids same with output nodes
         void set_input_output_node_ids() {
+            input_node_ids.clear();
+            output_node_ids.clear();
             for (int i=0; i<nodes.size(); i++) {
                 if (nodes[i].type == "input") {
                     input_node_ids.push_back(nodes[i].id);
@@ -156,6 +164,7 @@ class Genome {
                     return nodes[i];
                 }
             }
+            throw std::runtime_error("Node not found with id: " + std::to_string(node_id));
         }
 
         double sigmoid(double z) {

@@ -26,11 +26,11 @@ vector<vector<double>> X = {
     {1, 0},  
     {1, 1}  
 };
-vector<vector<double>> Y = {
-    {0},     
-    {1},     
-    {1},    
-    {0}     
+vector<vector<double>> Y = {  
+    {0, 1},  
+    {1, 0},    // first node is different
+    {1, 0},  
+    {0, 1}    
 };
 
 void crossover_test() {
@@ -87,8 +87,8 @@ void forward_prop_single_example_xor_test() {
     vector<double> x_1 = {0, 0};
     vector<double> x_2 = {0, 1};
 
-    vector<double> y_1 = {0};
-    vector<double> y_2 = {1};
+    vector<double> y_1 = {0, 1};
+    vector<double> y_2 = {1, 0};
 
     cout << "\n---Forward Prop Single Example xor Test---" << endl;
     int genome_indx = 2;
@@ -97,8 +97,13 @@ void forward_prop_single_example_xor_test() {
     // p1.mutation_add_node(genome, true);
     genome.show_weights();                                                // output may be [0.5, 0.5] if no input-node is connected to anything like a hidden or output node for sigmoid
     vector<double> y_hat = genome.forward_propagate_single_example(x_2); // something may be wrong with forward prop where the activations are always 0.5 because some input isnt connected to a output, or output doesnt have any connections to it. Outputs activations array maybe out of order 
-    print_vector(y_hat);  // can check calculation by hand using network topology, weights, activation funcs, and input example.
     
+    cout << "input: ";
+    print_vector(x_2);
+    cout << "predicted output: ";
+    print_vector(y_hat);  // can check calculation by hand using network topology, weights, activation funcs, and input example.
+    cout << "actual output:";
+    print_vector(y_2);
 }
 
 void fitness_func_xor_test() {
@@ -117,7 +122,7 @@ int main() {
     // create population initial population first
     // p1.create_population("rand_connected");   // when testing just manually create initial pop
     // p1.show_pop();
-    // crossover_test();
+    // // crossover_test();
     
     // add_connection_test();
     // add_node_test();
@@ -129,7 +134,9 @@ int main() {
     p1.create_population("rand_connected"); 
     p1.show_pop();
     p1.evolutionary_loop(X, Y);
+    
     forward_prop_single_example_xor_test();
+    // p1.show_pop();
     // crossover_test();
 
 

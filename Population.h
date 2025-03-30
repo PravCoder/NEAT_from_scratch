@@ -31,6 +31,10 @@ class Population {
         double avr_fitness;
         int tournament_size;
 
+        int num_weight_mutations = 0;
+        int num_add_node_mutations = 0;
+        int num_add_connection_mutations = 0;  // more gen stats TBD
+
 
         Population(int size, int numInputs, int numOutputs, double cr, string initializer, int num_generations, int tournament_size) : num_inputs(numInputs), num_outputs(numOutputs), population_size(size), crossover_rate(cr), initializer(initializer), num_generations(num_generations), tournament_size(tournament_size) {
             // create_population(initializer); // initial population is created here
@@ -129,6 +133,7 @@ class Population {
         }
 
         Genome crossover_genomes(Genome& parent1, Genome& parent2) {
+            // cout << "----------Crossover----------:" << endl;
             // choose the better parent, if fitness equal choose randomly
             Genome* better_parent_ptr;  // use pointers instead of references so we can assign them later, 
             Genome* lesser_parent_ptr;
@@ -147,13 +152,13 @@ class Population {
                     lesser_parent_ptr = &parent1;  // set pointer equal address of object
                 }
             }
-            // use dereferenced pointers to acess genome-objects
+            // use dereferenced pointers to access genome-objects
             Genome& better_parent = *better_parent_ptr;
             Genome& lesser_parent = *lesser_parent_ptr;
 
             // init offspring genome-obj
             Genome offspring = Genome(better_parent.num_inputs, better_parent.num_outputs);
-            // inherit all nodes from better parent (there are other approaches)
+            // inherit all nodes from better parent *(there are other approaches)*
             for (int i=0; i<better_parent.nodes.size(); i++) {
                 offspring.nodes.push_back(better_parent.nodes[i]);
             }
@@ -176,18 +181,33 @@ class Population {
                 }
 
             }
-            offspring.set_input_output_node_ids(); 
+
+            if (offspring.links.size() == 0) {
+                offspring.links = better_parent.links;
+            }
+            // offspring.set_input_output_node_ids(); 
+            // if (offspring.links.size() == 0) {
+            //     cout << "---Empty Network in Crossover---: " << endl;
+            //     cout << "Parent 1: " << parent1.fitness << endl;
+            //     parent1.show();
+            //     cout << "Parent 2: " << parent1.fitness << endl;
+            //     parent2.show();
+            //     cout << "Offspring: " << endl;
+            //     offspring.show();
+            // }
             return offspring;
         }
 
         void mutation_add_connection(Genome& offspring) {
+            // cout << "----Mutation Add Connection---:" << endl;
             // srand(time(NULL));
             int num_hidden = offspring.nodes.size() - (num_inputs + num_outputs);  // compute number of hidden nodes
             int num_connections_possible = (num_inputs*num_outputs) + (num_inputs*num_hidden) + (num_hidden*num_outputs); // input->output, input->hidden, hidden->out
             num_connections_possible += (num_hidden * (num_hidden - 1)) / 2;   // each hidden node can connect to all hidden nodes with higher indices
             num_connections_possible -= offspring.links.size();   // minus the number of connections that already exist
             
-            const int MAX_ATTEMPTS = num_connections_possible * 5;
+            // const int MAX_ATTEMPTS = num_connections_possible * 5;
+            const int MAX_ATTEMPTS = 10;
             cout << "max_attempts: " << MAX_ATTEMPTS << endl;
             
             // compile all of the input & hidden nodes because those are valid nodes for source-node
@@ -223,6 +243,9 @@ class Population {
         }
 
         void mutation_add_node(Genome& offspring, bool show_info) {
+            // cout << "----Mutation Add Node----:" << endl;
+            // cout << "before mutation: " << endl;
+            // offspring.show();
             // choose a random existing connection
             int rand_link_index = rand() % offspring.links.size();
             LinkGene& link_to_split = offspring.links[rand_link_index];    // reference, modified here is modified in offspring.links
@@ -248,10 +271,16 @@ class Population {
                 link_to_split.show();
                 cout << "new-node: " << new_node.id << endl;
             }
+            
+            // cout << "after mutation: " << endl;
+            // offspring.show();
 
         }
 
         void mutation_modify_weights(Genome& offspring, bool show_info) {
+            // cout << "---- Mutation Weights----:" << endl;
+            // cout << "before: " << endl;
+            // offspring.show();
             for (int i=0; i<offspring.links.size(); i++) {
                 double before_weight = offspring.links[i].weight;
                 double rand_weight = get_random_gaussian_weight();
@@ -260,6 +289,8 @@ class Population {
                 }
                 offspring.links[i].weight = offspring.links[i].weight + rand_weight;
             }
+            // cout << "after: " << endl;
+            // offspring.show();
         }
 
         /*
@@ -268,6 +299,8 @@ class Population {
         Higher the fitness the better genome is performing.
         */
         double compute_fitness_xor(vector<vector<double>> X, vector<vector<double>> Y, Genome& genome) {
+            if (genome.links.empty() || genome.nodes.empty()) return 0.0001;  // penalize empty networks even if they are created by accident
+
             double total_error = 0.0;
             
             for (int i=0; i<X.size(); i++) {   // iterate every example
@@ -295,6 +328,7 @@ class Population {
             create_population(initializer);  // if its the first generation create initial population
             for (int i=0; i<num_generations; i++) {
                 cout << "-----Generation #" << i << "-----" << endl;
+                check_empty_networks();
 
                 // compute fitness of population
                 best_fitness = 0, avr_fitness = 0;   // reset gen-stats after every generation
@@ -348,13 +382,17 @@ class Population {
             return selected_genomes;
         }
 
-        vector<Genome> create_next_generation(vector<Genome>& selected_genomes) { // returns vector<Genome> 
+        /*
+        
+        */
+        vector<Genome> create_next_generation(vector<Genome>& selected_genomes) {
             vector<Genome> next_generation_genomes;
             // create offpsrings by pairing selected networks
             vector<pair<Genome, Genome>> parent_pairs = get_parent_pairs(selected_genomes);
             for (int i=0; i<parent_pairs.size(); i++) {
+
                 pair<Genome, Genome>& cur_pair = parent_pairs[i];
-                Genome cur_offspring = Genome(num_inputs, num_outputs);
+                Genome cur_offspring(num_inputs, num_outputs);
                 // apply crossover rate, if crossvoer create offsprings from cur-pair-parents, else clone genome with higher fitness
                 if ((double)rand() / RAND_MAX < crossover_rate) {
                     cur_offspring = crossover_genomes(cur_pair.first, cur_pair.second);
@@ -366,13 +404,18 @@ class Population {
                 if ((double)rand() / RAND_MAX < 0.8) {
                     mutation_modify_weights(cur_offspring, false); // should modify reference
                 }
-                else if ((double)rand() / RAND_MAX < 0.05) {
+                if ((double)rand() / RAND_MAX < 0.05) {
                     mutation_add_node(cur_offspring, false);
                 }
-                else if ((double)rand() / RAND_MAX < 0.1) {
+                if ((double)rand() / RAND_MAX < 0.1) {
                     mutation_add_connection(cur_offspring);
                 }
 
+                if (cur_offspring.nodes.empty() || cur_offspring.links.empty()) {
+                    initialize_first_gen_genome_fully_connected(cur_offspring);
+                }
+
+                cur_offspring.set_input_output_node_ids();
                 next_generation_genomes.push_back(cur_offspring);  // add offspring to new generation
                 // cout << "cur off: " << cur_pair.first.fitness << ", " << cur_pair.second.fitness << endl;
             }
@@ -393,12 +436,25 @@ class Population {
                     parent2_indx = rand() % selected_genomes.size();
                 }
 
-                Genome parent1 = selected_genomes[parent1_indx];
-                Genome parent2 = selected_genomes[parent2_indx];
-
-                parent_pairs.push_back(make_pair(parent1, parent2));  // add pair
+                // Genome parent1 = selected_genomes[parent1_indx];
+                // Genome parent2 = selected_genomes[parent2_indx];
+                // parent_pairs.push_back(make_pair(parent1, parent2));  // add pair
+                parent_pairs.push_back(make_pair(selected_genomes[parent1_indx], selected_genomes[parent2_indx])); 
             }
             return parent_pairs;
+        }
+
+        int check_empty_networks() {
+            int num_empty = 0;
+            for (auto genome: genomes) {
+                if (genome.links.size() == 0 || genome.nodes.size() == 0) {
+                    num_empty += 1;
+                }
+            }
+            if (num_empty > 0) {
+                cout << "has empty-networks: " << num_empty << endl;
+            }
+            return num_empty;
         }
 
         double get_random_gaussian_weight(double mean=0.0, double stddev=1.0) {
