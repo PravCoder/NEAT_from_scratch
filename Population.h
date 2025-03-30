@@ -224,6 +224,8 @@ class Population {
         void mutation_add_connection(Genome& offspring) {
             if (offspring.nodes.empty()) {
                 cerr << "Cannot add connection to empty network" << endl;
+                initialize_first_gen_genome_randomly_connected(offspring);
+                offspring.set_input_output_node_ids();
                 return;
             }
             // cout << "----Mutation Add Connection---:" << endl;
@@ -233,9 +235,9 @@ class Population {
             num_connections_possible += (num_hidden * (num_hidden - 1)) / 2;   // each hidden node can connect to all hidden nodes with higher indices
             num_connections_possible -= offspring.links.size();   // minus the number of connections that already exist
             
-            // const int MAX_ATTEMPTS = num_connections_possible * 5;
-            const int MAX_ATTEMPTS = 10;
-            cout << "max_attempts: " << MAX_ATTEMPTS << endl;
+            const int MAX_ATTEMPTS = num_connections_possible * 5;
+            // const int MAX_ATTEMPTS = 10;
+            // cout << "max_attempts: " << MAX_ATTEMPTS << endl;
             
             // compile all of the input & hidden nodes because those are valid nodes for source-node
             vector<int> input_hidden_node_indicies = offspring.get_input_and_hidden_nodes_indicies();
@@ -270,12 +272,12 @@ class Population {
         }
 
         void mutation_add_node(Genome& offspring, bool show_info) {
-            cout << "----Mutation Add Node----:" << endl;
-            cout << "before mutation: " << endl;
-            offspring.show();
+            // cout << "----Mutation Add Node----:" << endl;
+            // cout << "before mutation: " << endl;
+            // offspring.show();
 
             if (offspring.nodes.size() == 0 || offspring.links.size() == 0) {
-                cerr << "Cannot add node to empty network - adding default connection first" << endl;
+                cerr << "Cannot add node to empty network" << endl;
                 initialize_first_gen_genome_randomly_connected(offspring);
                 offspring.set_input_output_node_ids();
             }
@@ -321,6 +323,7 @@ class Population {
                     cout << "before weight: " <<before_weight<< ", after weight: " << offspring.links[i].weight + rand_weight << endl;
                 }
                 offspring.links[i].weight = offspring.links[i].weight + rand_weight;
+                offspring.links[i].weight = std::max(-2.0, std::min(2.0, offspring.links[i].weight)); // map teh weight between range
             }
             // cout << "after: " << endl;
             // offspring.show();
@@ -438,7 +441,7 @@ class Population {
                     mutation_modify_weights(cur_offspring, false); // should modify reference
                 }
                 if ((double)rand() / RAND_MAX < 0.05) {
-                    cout << "SUB7" << endl;
+                    // cout << "SUB7" << endl;
                     mutation_add_node(cur_offspring, false);
                 }
                 if ((double)rand() / RAND_MAX < 0.1) {
