@@ -136,11 +136,12 @@ class Population {
                     }
                 }
                 
-                // if out of all links no inks have this output-node as its target node
-                if (!has_connection) {
-                    int input_node_id = rand() % num_inputs;  // randomlly choose a input-node
-                    double weight = (rand() % 200 - 100) / 100.0;
-                    int innov_num = get_innovation_number(input_node_id, output_node_id);
+                // if cur-output-node doesnt have a connection to it, create a random connection to cur-output-node
+                if (has_connection == false) {
+                    int input_node_id = genome.input_node_ids[rand() % genome.input_node_ids.size()];  // get a randomt input-node-id
+                    double weight = get_random_gaussian_weight();  // get random weight
+                    int innov_num = get_innovation_number(input_node_id, output_node_id); // get next innovation number for this new connection
+                    // add this new link with  random-input-node-id and cur-output-node
                     genome.links.push_back(LinkGene(input_node_id, output_node_id, weight, true, innov_num));
                 }
             }
