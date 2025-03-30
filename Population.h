@@ -123,6 +123,28 @@ class Population {
                 }
             }
 
+            // make sure each output node has at least one connection
+            for (int j=0; j<num_outputs; j++) {  // iterate all output nodes
+                int output_node_id = num_inputs+j; // get cur-output-node-id
+                bool has_connection = false;   // init cur-output node has connection to false
+                
+                // iterate all links of the genome if there exists 1 link with output node of cur-output node then it has connection
+                for (auto& link : genome.links) {
+                    if (link.output_node == output_node_id) {
+                        has_connection = true;
+                        break;
+                    }
+                }
+                
+                // if out of all links no inks have this output-node as its target node
+                if (!has_connection) {
+                    int input_node_id = rand() % num_inputs;  // randomlly choose a input-node
+                    double weight = (rand() % 200 - 100) / 100.0;
+                    int innov_num = get_innovation_number(input_node_id, output_node_id);
+                    genome.links.push_back(LinkGene(input_node_id, output_node_id, weight, true, innov_num));
+                }
+            }
+
         }
 
         void show_pop() {
@@ -253,6 +275,8 @@ class Population {
 
             if (offspring.nodes.size() == 0 || offspring.links.size() == 0) {
                 cerr << "Cannot add node to empty network - adding default connection first" << endl;
+                initialize_first_gen_genome_randomly_connected(offspring);
+                offspring.set_input_output_node_ids();
             }
             // choose a random existing connection
             int rand_link_index = rand() % offspring.links.size();
