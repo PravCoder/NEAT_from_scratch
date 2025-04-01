@@ -21,7 +21,7 @@ void print_vector(const vector<double>& vec) {
 // int tournament_size = 2;
 
 // XOR Hyperparameters
-int population_size = 200; // make sure even
+int population_size = 100; // make sure even
 int network_inputs = 2;
 int network_outputs = 2;
 double crossover_rate = 0.7;

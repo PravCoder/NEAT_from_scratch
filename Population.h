@@ -222,8 +222,10 @@ class Population {
         }
 
         void mutation_add_connection(Genome& offspring) {
+            Genome og_offspring = offspring;  // save original offspring to check if it was empty
+
             if (offspring.nodes.empty() || offspring.links.empty()) {
-                cerr << "empty network given to mutation - add connection" << endl;
+                // cerr << "empty network given to mutation - add connection" << endl;
                 initialize_first_gen_genome_randomly_connected(offspring);
                 offspring.set_input_output_node_ids();
                 return;
@@ -262,6 +264,12 @@ class Population {
                     continue;
                 }
 
+
+                // check if this mutation created a empty network
+                if ((og_offspring.nodes.empty() == false && og_offspring.links.empty() == false) && (offspring.nodes.empty() && offspring.links.empty()) ) {
+                    cerr << "empty network created by mutation - add connection" << endl;
+                }
+
                 // create new connection mutation
                 int new_innovation_num = get_innovation_number(source_node.id, target_node.id);
                 double new_weight = get_random_uniform_weight();
@@ -272,11 +280,12 @@ class Population {
         }
 
         void mutation_add_node(Genome& offspring, bool show_info) {
+            Genome og_offspring = offspring; 
             // cout << "----Mutation Add Node----:" << endl;
             // cout << "before mutation: " << endl;
             // offspring.show();
             if (offspring.nodes.empty() || offspring.links.empty()) {
-                cerr << "empty network given to mutation - add node" << endl;
+                // cerr << "empty network given to mutation - add node" << endl;
                 initialize_first_gen_genome_randomly_connected(offspring);
                 offspring.set_input_output_node_ids();
                 return;
@@ -306,6 +315,11 @@ class Population {
                 link_to_split.show();
                 cout << "new-node: " << new_node.id << endl;
             }
+
+            // check if this mutation created a empty network
+            if ((og_offspring.nodes.empty() == false && og_offspring.links.empty() == false) && (offspring.nodes.empty() && offspring.links.empty()) ) {
+                cerr << "empty network created by mutation - add node" << endl;
+            }
             
             // cout << "after mutation: " << endl;
             // offspring.show();
@@ -313,11 +327,12 @@ class Population {
         }
 
         void mutation_modify_weights(Genome& offspring, bool show_info) {
+            Genome og_offspring = offspring; 
             // cout << "---- Mutation Weights----:" << endl;
             // cout << "before: " << endl;
             // offspring.show();
             if (offspring.nodes.empty()) {
-                cerr << "empty network given to mutation - weight mutate" << endl;
+                // cerr << "empty network given to mutation - weight mutate" << endl;
                 initialize_first_gen_genome_randomly_connected(offspring);
                 offspring.set_input_output_node_ids();
                 return;
@@ -331,6 +346,11 @@ class Population {
                 }
                 offspring.links[i].weight = offspring.links[i].weight + rand_weight;
                 offspring.links[i].weight = std::max(-2.0, std::min(2.0, offspring.links[i].weight)); // map teh weight between range
+            }
+
+            // check if this mutation created a empty network
+            if ((og_offspring.nodes.empty() == false && og_offspring.links.empty() == false) && (offspring.nodes.empty() && offspring.links.empty()) ) {
+                cerr << "empty network created by mutation - mutate weights" << endl;
             }
             // cout << "after: " << endl;
             // offspring.show();
