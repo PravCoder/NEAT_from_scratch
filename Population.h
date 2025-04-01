@@ -222,8 +222,8 @@ class Population {
         }
 
         void mutation_add_connection(Genome& offspring) {
-            if (offspring.nodes.empty()) {
-                cerr << "Cannot add connection to empty network" << endl;
+            if (offspring.nodes.empty() || offspring.links.empty()) {
+                cerr << "empty network given to mutation - add connection" << endl;
                 initialize_first_gen_genome_randomly_connected(offspring);
                 offspring.set_input_output_node_ids();
                 return;
@@ -275,11 +275,11 @@ class Population {
             // cout << "----Mutation Add Node----:" << endl;
             // cout << "before mutation: " << endl;
             // offspring.show();
-
-            if (offspring.nodes.size() == 0 || offspring.links.size() == 0) {
-                cerr << "Cannot add node to empty network" << endl;
+            if (offspring.nodes.empty() || offspring.links.empty()) {
+                cerr << "empty network given to mutation - add node" << endl;
                 initialize_first_gen_genome_randomly_connected(offspring);
                 offspring.set_input_output_node_ids();
+                return;
             }
             // choose a random existing connection
             int rand_link_index = rand() % offspring.links.size();
@@ -316,6 +316,13 @@ class Population {
             // cout << "---- Mutation Weights----:" << endl;
             // cout << "before: " << endl;
             // offspring.show();
+            if (offspring.nodes.empty()) {
+                cerr << "empty network given to mutation - weight mutate" << endl;
+                initialize_first_gen_genome_randomly_connected(offspring);
+                offspring.set_input_output_node_ids();
+                return;
+            }
+
             for (int i=0; i<offspring.links.size(); i++) {
                 double before_weight = offspring.links[i].weight;
                 double rand_weight = get_random_uniform_weight();

@@ -144,7 +144,7 @@ int main() {
     p1.show_pop();
     p1.evolutionary_loop(X, Y);
     
-    forward_prop_single_example_xor_test();
+    // forward_prop_single_example_xor_test();
     // p1.show_pop();
     // crossover_test();
 
