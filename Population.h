@@ -156,6 +156,8 @@ class Population {
         }
 
         Genome crossover_genomes(Genome& parent1, Genome& parent2) {
+            Genome og_parent1 = parent1;  // save the parents to check if this crossover produces a empty-network
+            Genome og_parent2 = parent2;
             // cout << "----------Crossover----------:" << endl;
             // choose the better parent, if fitness equal choose randomly
             Genome* better_parent_ptr;  // use pointers instead of references so we can assign them later, 
@@ -208,16 +210,11 @@ class Population {
             if (offspring.links.size() == 0) {
                 offspring = better_parent;
             }
-            // offspring.set_input_output_node_ids(); 
-            // if (offspring.links.size() == 0) {
-            //     cout << "---Empty Network in Crossover---: " << endl;
-            //     cout << "Parent 1: " << parent1.fitness << endl;
-            //     parent1.show();
-            //     cout << "Parent 2: " << parent1.fitness << endl;
-            //     parent2.show();
-            //     cout << "Offspring: " << endl;
-            //     offspring.show();
-            // }
+            
+            // check if crossover produces a empty-network offspring, when neither parents were empty
+            if ((og_parent1.is_empty() == false || og_parent2.is_empty() == false) && offspring.is_empty() == true) {
+                cerr << "empty network created by crossover" << endl;
+            }
             return offspring;
         }
 
@@ -266,7 +263,7 @@ class Population {
 
 
                 // check if this mutation created a empty network
-                if ((og_offspring.nodes.empty() == false && og_offspring.links.empty() == false) && (offspring.nodes.empty() && offspring.links.empty()) ) {
+                if ((og_offspring.is_empty() == false) && (offspring.is_empty() == true) ) {
                     cerr << "empty network created by mutation - add connection" << endl;
                 }
 
@@ -317,7 +314,7 @@ class Population {
             }
 
             // check if this mutation created a empty network
-            if ((og_offspring.nodes.empty() == false && og_offspring.links.empty() == false) && (offspring.nodes.empty() && offspring.links.empty()) ) {
+            if ((og_offspring.is_empty() == false) && (offspring.is_empty() == true) ) {
                 cerr << "empty network created by mutation - add node" << endl;
             }
             
@@ -349,7 +346,7 @@ class Population {
             }
 
             // check if this mutation created a empty network
-            if ((og_offspring.nodes.empty() == false && og_offspring.links.empty() == false) && (offspring.nodes.empty() && offspring.links.empty()) ) {
+            if ((og_offspring.is_empty() == false) && (offspring.is_empty() == true) ) {
                 cerr << "empty network created by mutation - mutate weights" << endl;
             }
             // cout << "after: " << endl;

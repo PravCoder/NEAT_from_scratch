@@ -99,6 +99,13 @@ class Genome {
             return false;
         }
 
+        bool is_empty() {
+            if (links.size() == 0 || nodes.size() == 0) {
+                return true;
+            } 
+            return false;
+        }
+
         int get_next_node_id() {
             int max_id = -100;
             for (int i=0; i<nodes.size(); i++) {
