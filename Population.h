@@ -192,7 +192,7 @@ class Population {
             // check if the lesser parent is not empty and the creation of its genes map is empty
             lesser_parent.create_innovation_num_to_link_gene_map();
             if (lesser_parent.genes_map.empty() &&  lesser_parent.is_empty() == false) {
-                cout << "-genes map empty in crossover" << endl;
+                cerr << "-genes map empty in crossover" << endl;
             }
             
             for (int i=0; i<better_parent.links.size(); i++) {
@@ -227,7 +227,7 @@ class Population {
             Genome og_offspring = offspring;  // save original offspring to check if it was empty
             // if by change we recived a empty network, fill it up
             if (offspring.nodes.empty() || offspring.links.empty()) {
-                // cerr << "empty network given to mutation - add connection" << endl;
+                cerr << "empty network given to mutation - add connection" << endl;
                 initialize_first_gen_genome_randomly_connected(offspring);
                 offspring.set_input_output_node_ids();
                 return;
@@ -285,7 +285,7 @@ class Population {
             Genome og_offspring = offspring; 
             // if by change we recived a empty network, fill it up
             if (offspring.nodes.empty() || offspring.links.empty()) {
-                // cerr << "empty network given to mutation - add node" << endl;
+                cerr << "empty network given to mutation - add node" << endl;
                 initialize_first_gen_genome_randomly_connected(offspring);
                 offspring.set_input_output_node_ids();
                 return;
@@ -330,7 +330,7 @@ class Population {
             Genome og_offspring = offspring; 
             // if by change we recived a empty network, fill it up
             if (offspring.nodes.empty()) {
-                // cerr << "empty network given to mutation - weight mutate" << endl;
+                cerr << "empty network given to mutation - weight mutate" << endl;
                 initialize_first_gen_genome_randomly_connected(offspring);
                 offspring.set_input_output_node_ids();
                 return;
@@ -405,10 +405,16 @@ class Population {
                 
                 // select best performing networks using some method - func
                 vector<Genome> selected_genomes = select_best_networks_tournament();
-
+                if (check_if_vector_has_empty_networks(selected_genomes) == true) {
+                    cerr << "selected genomes has empty networks"<< endl;
+                }
 
                 // create offsprings by pairing these best networks crossing them over, mutate these offsprings randomlly - create_next_generation()
                 vector<Genome> next_generation_genomes = create_next_generation(selected_genomes);
+                if (check_if_vector_has_empty_networks(next_generation_genomes) == true) {
+                    cerr << "next generation genomes has empty networks" << endl;
+                }
+                
                 genomes.clear();
                 // replace genomes with next_generation_genomes;
                 genomes = next_generation_genomes;
@@ -509,7 +515,7 @@ class Population {
         int check_empty_networks() {
             int num_empty = 0;
             for (auto genome: genomes) {
-                if (genome.links.size() == 0 || genome.nodes.size() == 0) {
+                if (genome.is_empty() == true) {
                     num_empty += 1;
                 }
             }
@@ -517,6 +523,15 @@ class Population {
                 cout << "has empty-networks: " << num_empty << endl;
             }
             return num_empty;
+        }
+
+        bool check_if_vector_has_empty_networks(vector<Genome> arr) {
+            for (auto genome: arr) {
+                if (genome.is_empty() == true) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         double get_random_gaussian_weight(double mean=0.0, double stddev=0.2) {
