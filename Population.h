@@ -158,7 +158,7 @@ class Population {
         Genome crossover_genomes(Genome& parent1, Genome& parent2) {
             Genome og_parent1 = parent1;  // save the parents to check if this crossover produces a empty-network
             Genome og_parent2 = parent2;
-            // cout << "----------Crossover----------:" << endl;
+
             // choose the better parent, if fitness equal choose randomly
             Genome* better_parent_ptr;  // use pointers instead of references so we can assign them later, 
             Genome* lesser_parent_ptr;
@@ -187,8 +187,13 @@ class Population {
             for (int i=0; i<better_parent.nodes.size(); i++) {
                 offspring.nodes.push_back(better_parent.nodes[i]);
             }
+
             // create-map from innov-num to link-gene of lesser parent for quick lookup
+            // check if the lesser parent is not empty and the creation of its genes map is empty
             lesser_parent.create_innovation_num_to_link_gene_map();
+            if (lesser_parent.genes_map.empty() &&  lesser_parent.is_empty() == false) {
+                cout << "-genes map empty in crossover" << endl;
+            }
             
             for (int i=0; i<better_parent.links.size(); i++) {
                 LinkGene& better_link = better_parent.links[i];
@@ -207,12 +212,12 @@ class Population {
 
             }
 
-            if (offspring.links.size() == 0) {
-                offspring = better_parent;
-            }
+            // if (offspring.links.size() == 0) {
+            //     offspring = better_parent;
+            // }
             
             // check if crossover produces a empty-network offspring, when neither parents were empty
-            if ((og_parent1.is_empty() == false || og_parent2.is_empty() == false) && offspring.is_empty() == true) {
+            if ((og_parent1.is_empty() == false && og_parent2.is_empty() == false) && offspring.is_empty() == true) {
                 cerr << "empty network created by crossover" << endl;
             }
             return offspring;
@@ -220,7 +225,7 @@ class Population {
 
         void mutation_add_connection(Genome& offspring) {
             Genome og_offspring = offspring;  // save original offspring to check if it was empty
-
+            // if by change we recived a empty network, fill it up
             if (offspring.nodes.empty() || offspring.links.empty()) {
                 // cerr << "empty network given to mutation - add connection" << endl;
                 initialize_first_gen_genome_randomly_connected(offspring);
@@ -278,9 +283,7 @@ class Population {
 
         void mutation_add_node(Genome& offspring, bool show_info) {
             Genome og_offspring = offspring; 
-            // cout << "----Mutation Add Node----:" << endl;
-            // cout << "before mutation: " << endl;
-            // offspring.show();
+            // if by change we recived a empty network, fill it up
             if (offspring.nodes.empty() || offspring.links.empty()) {
                 // cerr << "empty network given to mutation - add node" << endl;
                 initialize_first_gen_genome_randomly_connected(offspring);
@@ -325,9 +328,7 @@ class Population {
 
         void mutation_modify_weights(Genome& offspring, bool show_info) {
             Genome og_offspring = offspring; 
-            // cout << "---- Mutation Weights----:" << endl;
-            // cout << "before: " << endl;
-            // offspring.show();
+            // if by change we recived a empty network, fill it up
             if (offspring.nodes.empty()) {
                 // cerr << "empty network given to mutation - weight mutate" << endl;
                 initialize_first_gen_genome_randomly_connected(offspring);

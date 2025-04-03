@@ -65,6 +65,7 @@ class Genome {
 
         // creates map from innov-num key to link-gene-obj for this genome, for fast lookup
         void create_innovation_num_to_link_gene_map() {
+            genes_map.clear(); 
             for (int i=0; i<links.size(); i++) {
                 genes_map[links[i].innovation_num] = links[i]; // innovation-num-key to link-gene-obj-value
             }

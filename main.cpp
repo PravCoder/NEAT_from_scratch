@@ -25,6 +25,7 @@ THIS IS A LOG OF ALL THE SIGNIFICANT-ROADBLOCK-BUGS IVE ENCOUNTERED DURING THIS 
     crossover and other because of memory management error. But for the crossover its parent that it receives is always empty, 
     suggesting that this empty network emrged from another mutation like add node.
     Check: checked if mutations are transforming a non empty offspring into a empty offspring, which they seem to be not, check the implementation of this
+    ***Empty Network Is Being Produced By Crossver, even when its parents are not empty. Bug in crossover print edge case.
     Temporary Fix: if given node in mutation functions is empty randomly initialize it.
 -  activation functions for this type of network. Try only one output node.
 - best_fitness is 1: the networks found a loophole with no hidden nodes or links which tehcnically creates a 0 error which results in fitness of 1
