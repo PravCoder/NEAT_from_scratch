@@ -22,12 +22,14 @@ TODO:
 
 THIS IS A LOG OF ALL THE SIGNIFICANT-ROADBLOCK-BUGS IVE ENCOUNTERED DURING THIS PROJECT, DOCUMENTING THEM AND WRITING DOWN MY THOUGHTS:
 [-] segmentation error, because empty network is being passed in mutation-add-node. Theres two ways a empty-genome can occur one with 
-    crossover and other because of memory management error. But for the crossover its parent that it receives is always empty, 
+   I wasn't updatin thte population_size variable when a new population is created so when I select the best networks I as selecting a invalid index
+   crossover and other because of memory management error. But for the crossover its parent that it receives is always empty, 
     suggesting that this empty network emrged from another mutation like add node.
     Check: checked if mutations are transforming a non empty offspring into a empty offspring, which they seem to be not, check the implementation of this
     ***Empty Network Is Being Produced By Crossver, even when its parents are not empty. Bug in crossover print edge case.
     Latest: empty-networks are not being created in crossover, but are being given to mutations. Currently mutations handle empty networks if they are given thats why number of empty is not printed per generation.
       The intermediaty functions in the evoltion loop are causing empty networks, selected genomes has empty networks
+      Check Activation functions for this task
     Temporary Fix: if given node in mutation functions is empty randomly initialize it.
 -  activation functions for this type of network. Try only one output node.
 - best_fitness is 1: the networks found a loophole with no hidden nodes or links which tehcnically creates a 0 error which results in fitness of 1

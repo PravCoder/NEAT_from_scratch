@@ -226,7 +226,7 @@ class Population {
         void mutation_add_connection(Genome& offspring) {
             Genome og_offspring = offspring;  // save original offspring to check if it was empty
             // if by change we recived a empty network, fill it up
-            if (offspring.nodes.empty() || offspring.links.empty()) {
+            if (offspring.is_empty()) {
                 cerr << "empty network given to mutation - add connection" << endl;
                 initialize_first_gen_genome_randomly_connected(offspring);
                 offspring.set_input_output_node_ids();
@@ -284,7 +284,7 @@ class Population {
         void mutation_add_node(Genome& offspring, bool show_info) {
             Genome og_offspring = offspring; 
             // if by change we recived a empty network, fill it up
-            if (offspring.nodes.empty() || offspring.links.empty()) {
+            if (offspring.is_empty()) {
                 cerr << "empty network given to mutation - add node" << endl;
                 initialize_first_gen_genome_randomly_connected(offspring);
                 offspring.set_input_output_node_ids();
@@ -329,7 +329,7 @@ class Population {
         void mutation_modify_weights(Genome& offspring, bool show_info) {
             Genome og_offspring = offspring; 
             // if by change we recived a empty network, fill it up
-            if (offspring.nodes.empty()) {
+            if (offspring.is_empty()) {
                 cerr << "empty network given to mutation - weight mutate" << endl;
                 initialize_first_gen_genome_randomly_connected(offspring);
                 offspring.set_input_output_node_ids();
@@ -415,9 +415,11 @@ class Population {
                     cerr << "next generation genomes has empty networks" << endl;
                 }
                 
+                check_empty_networks(); // is never printed for some reason
                 genomes.clear();
                 // replace genomes with next_generation_genomes;
                 genomes = next_generation_genomes;
+                population_size = genomes.size();  // update population size
             }
         }
 
@@ -428,6 +430,13 @@ class Population {
         Promotes diversity through random sampling of groups. Promotes best networks by selecting highest fitness in each random group.
         */
         vector<Genome> select_best_networks_tournament() {
+            check_empty_networks(); // check how many empty networks are in genomes before selecting best ones
+            // check if the population-variable size is more thatn the genomes size, this is where empty networks originate if this condition is true
+            if (population_size > genomes.size()) {
+                cout << "Debug: genomes.size() = " << genomes.size() << ", population_size = " << population_size << endl;
+            }
+            cout << "Debug-2: genomes.size() = " << genomes.size() << ", population_size = " << population_size << endl;
+            
             vector<Genome> selected_genomes;
 
             int num_to_select = population_size;  // number of genomes to select for reproduction
@@ -445,6 +454,9 @@ class Population {
                     }
                 }
                 // add the best genome with highest to selected genomes for next gen reporduction
+                // if (genomes[best_indx].is_empty()) {
+                //     cout << "added empty in select" << endl;
+                // }
                 selected_genomes.push_back(genomes[best_indx]);
             }
             return selected_genomes;
@@ -520,7 +532,7 @@ class Population {
                 }
             }
             if (num_empty > 0) {
-                cout << "has empty-networks: " << num_empty << endl;
+                cerr << "has empty-networks: " << num_empty << endl;
             }
             return num_empty;
         }
