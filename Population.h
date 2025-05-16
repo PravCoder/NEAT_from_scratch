@@ -403,14 +403,18 @@ class Population {
                 show_gen_stats();  
                 // show_pop();
                 
+                cout << "genomes.size() = " << genomes.size() << ", pop_size = " << population_size << endl;
+
                 // select best performing networks using some method - func
                 vector<Genome> selected_genomes = select_best_networks_tournament();
+                cout << "selected_genomes: " << selected_genomes.size() << endl;
                 if (check_if_vector_has_empty_networks(selected_genomes) == true) {
                     cerr << "selected genomes has empty networks"<< endl;
                 }
 
                 // create offsprings by pairing these best networks crossing them over, mutate these offsprings randomlly - create_next_generation()
                 vector<Genome> next_generation_genomes = create_next_generation(selected_genomes);
+                cout << "next_gen_genomes: " << next_generation_genomes.size() << endl;
                 if (check_if_vector_has_empty_networks(next_generation_genomes) == true) {
                     cerr << "next generation genomes has empty networks" << endl;
                 }
@@ -435,11 +439,12 @@ class Population {
             if (population_size > genomes.size()) {
                 cout << "Debug: genomes.size() = " << genomes.size() << ", population_size = " << population_size << endl;
             }
-            cout << "Debug-2: genomes.size() = " << genomes.size() << ", population_size = " << population_size << endl;
+            // cout << "Debug-2: genomes.size() = " << genomes.size() << ", population_size = " << population_size << endl;
             
             vector<Genome> selected_genomes;
 
-            int num_to_select = population_size;  // number of genomes to select for reproduction
+            // number of genomes to select for reproduction
+            int num_to_select = population_size;  
 
             for (int i=0; i<num_to_select; i++) {
                 int best_indx = rand() % population_size;
@@ -469,6 +474,7 @@ class Population {
             vector<Genome> next_generation_genomes;
             // create offpsrings by pairing selected networks
             vector<pair<Genome, Genome>> parent_pairs = get_parent_pairs(selected_genomes);
+            // iterate all parent pairs that we selected for reproduction, for each create 2 new offsprings
             for (int i=0; i<parent_pairs.size(); i++) {
                 pair<Genome, Genome>& cur_pair = parent_pairs[i];
                 Genome cur_offspring(num_inputs, num_outputs);
@@ -498,6 +504,28 @@ class Population {
                 cur_offspring.set_input_output_node_ids();
                 next_generation_genomes.push_back(cur_offspring);  // add offspring to new generation
                 // cout << "cur off: " << cur_pair.first.fitness << ", " << cur_pair.second.fitness << endl;
+
+
+                // Create SECOND offspring (swap parents for more diversity)
+                Genome offspring2(num_inputs, num_outputs);
+                if ((double)rand() / RAND_MAX < crossover_rate) {
+                    offspring2 = crossover_genomes(cur_pair.second, cur_pair.first); // Swap parents
+                } else {
+                    offspring2 = (cur_pair.second.fitness > cur_pair.first.fitness) ? cur_pair.second : cur_pair.first;
+                }
+                
+                // Apply mutations to second offspring
+                if ((double)rand() / RAND_MAX < 0.8) {
+                    mutation_modify_weights(offspring2, false);
+                }
+                if ((double)rand() / RAND_MAX < 0.05) {
+                    mutation_add_node(offspring2, false);
+                }
+                if ((double)rand() / RAND_MAX < 0.1) {
+                    mutation_add_connection(offspring2);
+                }
+                offspring2.set_input_output_node_ids();
+                next_generation_genomes.push_back(offspring2);
             }
             return next_generation_genomes;
 

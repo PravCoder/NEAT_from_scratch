@@ -21,7 +21,8 @@ TODO:
 - get_best_solution() function which gets best performing genome from last generation
 
 THIS IS A LOG OF ALL THE SIGNIFICANT-ROADBLOCK-BUGS IVE ENCOUNTERED DURING THIS PROJECT, DOCUMENTING THEM AND WRITING DOWN MY THOUGHTS:
-[-] segmentation error, because empty network is being passed in mutation-add-node. Theres two ways a empty-genome can occur one with 
+[-] population is halving every generation, decide how many are selected for repdocution, when these are paired decide how many offsprings each pairing generates. 
+-  segmentation error, because empty network is being passed in mutation-add-node. Theres two ways a empty-genome can occur one with 
    I wasn't updatin thte population_size variable when a new population is created so when I select the best networks I as selecting a invalid index
    crossover and other because of memory management error. But for the crossover its parent that it receives is always empty, 
     suggesting that this empty network emrged from another mutation like add node.
