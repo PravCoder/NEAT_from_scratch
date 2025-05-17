@@ -444,7 +444,7 @@ class Population {
             
             vector<Genome> selected_genomes;
 
-            // number of genomes to select for reproduction
+            // number of genomes to select for reproduction, these genomes have to produce enough offsprings for next gen
             int num_to_select = population_size;  
 
             for (int i=0; i<num_to_select; i++) {
@@ -483,7 +483,6 @@ class Population {
                 // apply crossover rate, if crossvoer create offsprings from cur-pair-parents, else clone genome with higher fitness
                 if ((double)rand() / RAND_MAX < crossover_rate) {
                     cur_offspring = crossover_genomes(cur_pair.first, cur_pair.second);
-
                 } else {
                     cur_offspring = (cur_pair.first.fitness > cur_pair.second.fitness) ? cur_pair.first : cur_pair.second;
                 }

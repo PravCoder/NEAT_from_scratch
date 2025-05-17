@@ -126,42 +126,98 @@ class Genome {
         */
         vector<double> forward_propagate_single_example(vector<double> X) {
             vector<double> y_hat;
+
             if (X.size() != input_node_ids.size()) {
-                cerr << "Input size mismatch!" << endl;
+                cerr << "Input size mismatch! In forward prop single example." << endl;
             }
 
-            // reset all activations to 0
+            // reset all nodes activations to 0
             for (int i = 0; i < nodes.size(); i++) {if (nodes[i].type != "input") {nodes[i].activation = 0.0;}}
             
             // set input node activations to x-input-values using input-node-ids
             for (int i=0; i<input_node_ids.size(); i++) {
                 NodeGene& cur_input_node = get_node_via_id(input_node_ids[i]);
-                
-                cur_input_node.activation = X[i];
+                cur_input_node.activation = X[i];  // set cur-input-node activation to input example ith
                 //cout << "is this input node getting set id: " <<cur_input_node.id << ", activation: " <<cur_input_node.activation << endl;
             }
 
-            // iterate all nodes for feed-forward structure
+            // Debug-Print: show initial activations of all nodes
+            // for (int i = 0; i < nodes.size(); i++) {
+            //     cout << "Initial - Node " << nodes[i].id << " (" << nodes[i].type 
+            //          << ") activation: " << nodes[i].activation << endl;
+            // }
+            
+            // Process nodes in order:
+            // 1. Inputs nodes (processed above already)
+            // 2. Hidden nodes
+            // 3. Output nodes
+
+            // process hidden nodes first, iterate all nodes
             for (int i=0; i<nodes.size(); i++) {
                 NodeGene& cur_node = nodes[i];
-                if (cur_node.type == "input") {  // if its a input-node skip because its activation is already set
+                // if its not a hidden node skip it, so only processing hidden nodes here
+                if (cur_node.type != "hidden") {  
                     continue;
                 }
-                vector<LinkGene> target_links = get_links_of_target_node(cur_node.id); // get all links whose output-node is cur-node
-                double weighted_sum = 0.0;  // weighted-sum of cur-node
+
+                // get all links whose output-node is cur-hidden-node
+                vector<LinkGene> target_links = get_links_of_target_node(cur_node.id); 
+                double weighted_sum = 0.0;  // weighted-sum of cur-hiddennode
                 
-                // iterate these links whose target-node is cur-node
+                // iterate these links whose target-node is cur-hidden-node
                 for (int j=0; j<target_links.size(); j++) {
                     LinkGene& cur_link = target_links[j];
                     if (cur_link.enabled == true) { // if cur-link is enabled then compute its weighted-sum by multiplying its weight and the activation of that links source-node
                         //cout << "this a weight " << cur_link.weight << ", this a act " << get_node_via_id(cur_link.input_node).activation << ", id "<<cur_link.input_node << endl;
-                        weighted_sum +=  (cur_link.weight * get_node_via_id(cur_link.input_node).activation);
+                        double contribution = cur_link.weight * get_node_via_id(cur_link.input_node).activation;
+                        weighted_sum +=  contribution;
                     }
+                    // Debug-Print
+                    // cout << "  Link from " << cur_link.input_node << " to " << cur_link.output_node 
+                    //     << " weight: " << cur_link.weight 
+                    //     << " source activation: " << get_node_via_id(cur_link.input_node).activation
+                    //     << " contribution: " << (cur_link.weight * get_node_via_id(cur_link.input_node).activation)
+                    //     << endl;
                 }
-
                 weighted_sum += cur_node.bias;  // add bias
                 cur_node.activation = sigmoid(weighted_sum); // set activation of weighted-sum as activation of cur-node
+                cout << "Node " << cur_node.id << " weighted_sum: " << weighted_sum << ", activation: " << sigmoid(weighted_sum) << endl;
             }
+
+
+
+            // process output nodes next, iterate all nodes
+            for (int i=0; i<nodes.size(); i++) {
+                NodeGene& cur_node = nodes[i];
+                // if its not a output node skip it, so only processing output nodes here
+                if (cur_node.type != "output") {  
+                    continue;
+                }
+
+                // get all links whose output-node is cur-output-node
+                vector<LinkGene> target_links = get_links_of_target_node(cur_node.id); 
+                double weighted_sum = 0.0;  // weighted-sum of cur-hiddennode
+                
+                // iterate these links whose target-node is cur-output-node
+                for (int j=0; j<target_links.size(); j++) {
+                    LinkGene& cur_link = target_links[j];
+                    if (cur_link.enabled == true) { // if cur-link is enabled then compute its weighted-sum by multiplying its weight and the activation of that links source-node
+                        //cout << "this a weight " << cur_link.weight << ", this a act " << get_node_via_id(cur_link.input_node).activation << ", id "<<cur_link.input_node << endl;
+                        double contribution = cur_link.weight * get_node_via_id(cur_link.input_node).activation;
+                        weighted_sum +=  contribution;
+                    }
+                    // Debug-Print
+                    // cout << "  Link from " << cur_link.input_node << " to " << cur_link.output_node 
+                    //     << " weight: " << cur_link.weight 
+                    //     << " source activation: " << get_node_via_id(cur_link.input_node).activation
+                    //     << " contribution: " << (cur_link.weight * get_node_via_id(cur_link.input_node).activation)
+                    //     << endl;
+                }
+                weighted_sum += cur_node.bias;  // add bias
+                cur_node.activation = sigmoid(weighted_sum); // set activation of weighted-sum as activation of cur-node
+                cout << "Node " << cur_node.id << " weighted_sum: " << weighted_sum << ", activation: " << sigmoid(weighted_sum) << endl;
+            }
+
 
             // get output values
             for (int i=0; i<output_node_ids.size(); i++) {

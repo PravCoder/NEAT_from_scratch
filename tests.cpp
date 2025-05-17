@@ -144,13 +144,33 @@ int main() {
     p1.show_pop();
     p1.evolutionary_loop(X, Y);
     
-    // forward_prop_single_example_xor_test();
+    forward_prop_single_example_xor_test();
     // p1.show_pop();
     // crossover_test();
 
 
     return 0;
 }
+
+/*
+
+---Forward Prop Single Example xor Test---
+genome in: 2 outs: 2
+   nodes: 0-inp, 1-inp, 2-out, 3-out, 4
+   links: 
+   0->2[IN=0]d
+   0->3[IN=3]d
+   0->4[IN=6]e
+   4->2[IN=5]e
+   weights:
+   [IN=6]-2
+   [IN=3]-0.274386
+   [IN=5]-0.451648
+   [IN=0]--0.211217
+input: [ 0, 1 ]
+predicted output: [ 0.5, 0.5 ]
+actual output:[ 1, 0 ]
+*/
 
 
 
