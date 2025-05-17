@@ -43,6 +43,7 @@ class Population {
         // creates genome-objs for initial-first-generation
         void create_population(string initializer) {
             // iterate the population-size
+            cout << "init pop-size: " << population_size << endl;
             for (int i=0; i<population_size; i++) {
                 Genome cur_genome = Genome(num_inputs, num_outputs);  // create genome-obj with num-inputs-outputs
                 genomes.push_back(cur_genome);                        // add genome-obj to genomes-arr
@@ -386,7 +387,7 @@ class Population {
         Loop to compute fitness and create next generation of genomes based on best performing genoms of previous population.
         */
         void evolutionary_loop(vector<vector<double>> X, vector<vector<double>> Y) {
-            create_population(initializer);  // if its the first generation create initial population
+            // create_population(initializer);  // if its the first generation create initial population
             for (int i=0; i<num_generations; i++) {
                 cout << "-----Generation #" << i << "-----" << endl;
                 check_empty_networks();
@@ -406,7 +407,7 @@ class Population {
                 cout << "genomes.size() = " << genomes.size() << ", pop_size = " << population_size << endl;
 
                 // select best performing networks using some method - func
-                vector<Genome> selected_genomes = select_best_networks_tournament();
+                vector<Genome> selected_genomes = select_best_networks_tournament();  // these are the networks we pair for reproduction
                 cout << "selected_genomes: " << selected_genomes.size() << endl;
                 if (check_if_vector_has_empty_networks(selected_genomes) == true) {
                     cerr << "selected genomes has empty networks"<< endl;
@@ -475,6 +476,7 @@ class Population {
             // create offpsrings by pairing selected networks
             vector<pair<Genome, Genome>> parent_pairs = get_parent_pairs(selected_genomes);
             // iterate all parent pairs that we selected for reproduction, for each create 2 new offsprings
+            cout << "parent pairs=" << parent_pairs.size() << endl;
             for (int i=0; i<parent_pairs.size(); i++) {
                 pair<Genome, Genome>& cur_pair = parent_pairs[i];
                 Genome cur_offspring(num_inputs, num_outputs);

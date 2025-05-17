@@ -157,6 +157,12 @@ int main() {
 /*
 g++ -o tests tests.cpp
 ./tests
+
 g++ -o tests tests.cpp && ./tests
+
 g++ -std=c++11 -o tests tests.cpp && ./tests
+
+
+g++ -std=c++11 -Wall -o tests tests.cpp && ./tests
+
 */
