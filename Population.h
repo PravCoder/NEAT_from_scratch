@@ -390,7 +390,8 @@ class Population {
             // create_population(initializer);  // if its the first generation create initial population
             for (int i=0; i<num_generations; i++) {
                 cout << "-----Generation #" << i << "-----" << endl;
-                check_empty_networks();
+                cout << "empty: " << check_empty_networks() << endl;
+                cout << "disabled: " << check_disabled_networks() << endl;
 
                 // compute fitness of population
                 best_fitness = 0, avr_fitness = 0;   // reset gen-stats after every generation
@@ -564,6 +565,16 @@ class Population {
                 cerr << "has empty-networks: " << num_empty << endl;
             }
             return num_empty;
+        }
+
+        int check_disabled_networks() {
+            int num_disabled = 0;
+            for (auto genome: genomes) {
+                if (genome.are_all_links_disabled() == true) {
+                    num_disabled += 1;
+                }
+            }
+            return num_disabled;
         }
 
         bool check_if_vector_has_empty_networks(vector<Genome> arr) {

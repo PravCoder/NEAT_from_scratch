@@ -106,6 +106,15 @@ class Genome {
             } 
             return false;
         }
+        
+        bool are_all_links_disabled() {
+            for (int i=0; i<links.size(); i++) {
+                if (links[i].enabled == true) {
+                    return false;  // all of its links are not disabled, at least one is enabled
+                }
+            }
+            return true;  // all of its links are disabled. 
+        }
 
         int get_next_node_id() {
             int max_id = -100;
