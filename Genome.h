@@ -181,7 +181,7 @@ class Genome {
                 }
                 weighted_sum += cur_node.bias;  // add bias
                 cur_node.activation = sigmoid(weighted_sum); // set activation of weighted-sum as activation of cur-node
-                cout << "Node " << cur_node.id << " weighted_sum: " << weighted_sum << ", activation: " << sigmoid(weighted_sum) << endl;
+                // cout << "Node " << cur_node.id << " weighted_sum: " << weighted_sum << ", activation: " << sigmoid(weighted_sum) << endl;
             }
 
 
@@ -215,7 +215,7 @@ class Genome {
                 }
                 weighted_sum += cur_node.bias;  // add bias
                 cur_node.activation = sigmoid(weighted_sum); // set activation of weighted-sum as activation of cur-node
-                cout << "Node " << cur_node.id << " weighted_sum: " << weighted_sum << ", activation: " << sigmoid(weighted_sum) << endl;
+                // cout << "Node " << cur_node.id << " weighted_sum: " << weighted_sum << ", activation: " << sigmoid(weighted_sum) << endl;
             }
 
 

@@ -21,12 +21,12 @@ void print_vector(const vector<double>& vec) {
 // int tournament_size = 2;
 
 // XOR Hyperparameters
-int population_size = 50; // make sure even
+int population_size = 100; // make sure even
 int network_inputs = 2;
 int network_outputs = 2;
-double crossover_rate = 0.7;
-int num_generations = 10;
-int tournament_size = 3;
+double crossover_rate = 0.75;
+int num_generations = 30;
+int tournament_size = 4;
 
 Population p1 = Population(population_size, network_inputs, network_outputs, crossover_rate, "rand_connected", num_generations, tournament_size); // rand_connnected, fully_connected
 vector<vector<double>> X = {
@@ -101,7 +101,7 @@ void forward_prop_single_example_xor_test() {
 
     cout << "\n---Forward Prop Single Example xor Test---" << endl;
     int genome_indx = 2;
-    Genome& genome = p1.genomes[genome_indx];
+    Genome& genome = p1.get_best_network();
     genome.show();
     // p1.mutation_add_node(genome, true);
     genome.show_weights();                                                // output may be [0.5, 0.5] if no input-node is connected to anything like a hidden or output node for sigmoid
@@ -143,6 +143,7 @@ int main() {
     p1.create_population("rand_connected"); 
     p1.show_pop();
     p1.evolutionary_loop(X, Y);
+
     
     forward_prop_single_example_xor_test();
     // p1.show_pop();
@@ -175,14 +176,12 @@ actual output:[ 1, 0 ]
 
 
 /*
+RUN: g++ -std=c++11 -o tests tests.cpp && ./tests
+
 g++ -o tests tests.cpp
 ./tests
-
 g++ -o tests tests.cpp && ./tests
-
 g++ -std=c++11 -o tests tests.cpp && ./tests
-
-
 g++ -std=c++11 -Wall -o tests tests.cpp && ./tests
 
 */

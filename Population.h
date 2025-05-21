@@ -575,6 +575,19 @@ class Population {
             return false;
         }
 
+        Genome& get_best_network() {
+            double cur_max_fitness = -1; 
+            int best_idx = 0;
+        
+            for (int i=0; i<genomes.size(); i++) {
+                if (genomes[i].fitness > cur_max_fitness) {
+                    cur_max_fitness = genomes[i].fitness;
+                    best_idx = i;
+                }
+            }
+            return genomes[best_idx];
+        }
+
         double get_random_gaussian_weight(double mean=0.0, double stddev=0.2) {
             static std::random_device rd;  // Seed
             static std::mt19937 gen(rd()); // Mersenne Twister random number generator
