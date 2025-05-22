@@ -176,7 +176,8 @@ actual output:[ 1, 0 ]
 
 
 /*
-RUN: g++ -std=c++11 -o tests tests.cpp && ./tests
+RUN: 
+g++ -std=c++11 -o tests tests.cpp && ./tests
 
 g++ -o tests tests.cpp
 ./tests
