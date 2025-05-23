@@ -361,7 +361,7 @@ class Population {
         Higher the fitness the better genome is performing.
         */
         double compute_fitness_xor(vector<vector<double>> X, vector<vector<double>> Y, Genome& genome) {
-            if (genome.is_empty() || genome.are_all_links_disabled())  { // make sure empty and disabled networks have very low fitness so their genes dont get passed on, and empty/disabled networks appear in the population again
+            if (genome.is_empty() || genome.are_all_links_disabled() || genome.has_floating_outputs())  { // make sure empty and disabled networks have very low fitness so their genes dont get passed on, and empty/disabled networks appear in the population again
                 return 0.0001;  // penalize empty networks even if they are created by accident
             }
 
