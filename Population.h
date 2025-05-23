@@ -394,6 +394,8 @@ class Population {
                 cout << "-----Generation #" << i << "-----" << endl;
                 cout << "empty: " << check_empty_networks() << endl;
                 cout << "disabled: " << check_disabled_networks() << endl;
+                cout << "floating: " << check_floating_output_networks() << endl;
+                cout << "genomes.size() = " << genomes.size() << ", pop_size = " << population_size << endl;
 
                 // compute fitness of population
                 best_fitness = 0, avr_fitness = 0;   // reset gen-stats after every generation
@@ -407,7 +409,7 @@ class Population {
                 show_gen_stats();  
                 // show_pop();
                 
-                cout << "genomes.size() = " << genomes.size() << ", pop_size = " << population_size << endl;
+                
 
                 // select best performing networks using some method - func
                 vector<Genome> selected_genomes = select_best_networks_tournament();  // these are the networks we pair for reproduction
@@ -577,6 +579,16 @@ class Population {
                 }
             }
             return num_disabled;
+        }
+
+        int check_floating_output_networks() {
+            int count = 0;
+            for (auto genome: genomes) {
+                if (genome.has_floating_outputs() == true) { // if cur genome has a floating output node meaning it has a output node that doesn't have any connections
+                    count +=1 ;
+                }
+            }
+            return count;
         }
 
         bool check_if_vector_has_empty_networks(vector<Genome> arr) {

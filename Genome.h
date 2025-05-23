@@ -116,6 +116,28 @@ class Genome {
             return true;  // all of its links are disabled. 
         }
 
+        // returns true if this network has at least 1 output node that doesn't have any incoming connections, otherwrise returns false it doesnt have floating outputs
+        // if a output node doesn't have a incoming connection then its just floating
+        bool has_floating_outputs() {
+            // iterate all output nodes
+            for (int output_node_id : output_node_ids) {
+                bool cur_out_node_has_connection = false;
+
+                for (auto& link: links) {  // iterate all links
+                    if (link.output_node == output_node_id && link.enabled == true) {
+                        cur_out_node_has_connection = true;  // then this output node has a incoming connection
+                        break; 
+                    }
+                }
+
+                // if this output node has no incoming connection, this networks doesnt have functional outputs
+                if (cur_out_node_has_connection == false) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         int get_next_node_id() {
             int max_id = -100;
             for (int i=0; i<nodes.size(); i++) {

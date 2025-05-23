@@ -109,7 +109,7 @@ void forward_prop_single_example_xor_test() {
     
     cout << "input: ";
     print_vector(x_2);
-    cout << "predicted output: ";
+    cout << "predicted output (d,s): ";
     print_vector(y_hat);  // can check calculation by hand using network topology, weights, activation funcs, and input example.
     cout << "actual output:";
     print_vector(y_2);
