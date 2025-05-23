@@ -1,6 +1,7 @@
 #include <iostream>
 using namespace std;
 #include "Population.h" 
+#include <sstream>
 
 
 void print_vector(const vector<double>& vec) {
@@ -10,6 +11,17 @@ void print_vector(const vector<double>& vec) {
         if (i < vec.size() - 1) cout << ", ";  // avoid trailing comma
     }
     cout << " ]" << endl;
+}
+
+string vector_to_string(const std::vector<double>& vec) {
+    std::ostringstream oss;
+    oss << "[ ";
+    for (size_t i = 0; i < vec.size(); i++) {
+        oss << vec[i];
+        if (i < vec.size() - 1) oss << ", ";
+    }
+    oss << " ]";
+    return oss.str();
 }
 
 // Testing Hyperparameters
@@ -23,9 +35,9 @@ void print_vector(const vector<double>& vec) {
 // XOR Hyperparameters
 int population_size = 100; // make sure even
 int network_inputs = 2;
-int network_outputs = 2;
+int network_outputs = 1;  // make sure this is set for one-hot-encoding/single-output xor
 double crossover_rate = 0.75;
-int num_generations = 30;
+int num_generations = 200;
 int tournament_size = 4;
 
 Population p1 = Population(population_size, network_inputs, network_outputs, crossover_rate, "rand_connected", num_generations, tournament_size); // rand_connnected, fully_connected
@@ -41,6 +53,10 @@ vector<vector<double>> Y = {
     {1, 0},  
     {0, 1}    
 };
+
+// Single-output XOR
+vector<vector<double>> X1 = {{0,0}, {0,1}, {1,0}, {1,1}};
+vector<vector<double>> Y1 = {{0}, {1}, {1}, {0}};
 
 void crossover_test() {
     int i = 0;
@@ -91,7 +107,7 @@ void weight_mutation_test() {
     p1.genomes[genome_indx].show();
 }
 
-void forward_prop_single_example_xor_test() { 
+void forward_prop_single_example_xor_test_one_hot() { 
     // input values & labels
     vector<double> x_1 = {0, 0};
     vector<double> x_2 = {0, 1};
@@ -99,7 +115,9 @@ void forward_prop_single_example_xor_test() {
     vector<double> y_1 = {0, 1};
     vector<double> y_2 = {1, 0};
 
-    cout << "\n---Forward Prop Single Example xor Test---" << endl;
+
+
+    cout << "\n---Forward Prop Single Example xor Test One Hot Encoding---" << endl;
     int genome_indx = 2;
     Genome& genome = p1.get_best_network();
     genome.show();
@@ -113,6 +131,41 @@ void forward_prop_single_example_xor_test() {
     print_vector(y_hat);  // can check calculation by hand using network topology, weights, activation funcs, and input example.
     cout << "actual output:";
     print_vector(y_2);
+}
+
+void forward_prop_single_example_xor_single_output() { 
+    // input values & labels
+    vector<double> x_1 = {0, 0};
+    vector<double> y_1 = {0};
+
+    vector<double> x_2 = {0, 1};
+    vector<double> y_2 = {1};
+
+    vector<double> x_3 = {1, 0};
+    vector<double> y_3 = {1};
+
+    vector<double> x_4 = {1, 1};
+    vector<double> y_4 = {0};
+
+
+
+    cout << "\n---Forward Prop Single Example xor Test Single Output---" << endl;
+    int genome_indx = 2;
+    Genome& genome = p1.get_best_network();
+    genome.show();
+    // p1.mutation_add_node(genome, true);
+    genome.show_weights();                                                // output may be [0.5, 0.5] if no input-node is connected to anything like a hidden or output node for sigmoid
+    vector<double> y_hat1 = genome.forward_propagate_single_example(x_1); 
+    vector<double> y_hat2 = genome.forward_propagate_single_example(x_2); 
+    vector<double> y_hat3 = genome.forward_propagate_single_example(x_3); 
+    vector<double> y_hat4 = genome.forward_propagate_single_example(x_4); 
+    
+    cout << "input: " << vector_to_string(x_1) << " actual: " << vector_to_string(y_1) << " pred: " << vector_to_string(y_hat1) << endl;
+    cout << "input: " << vector_to_string(x_2) << " actual: " << vector_to_string(y_2) << " pred: " << vector_to_string(y_hat2) << endl;
+
+    cout << "input: " << vector_to_string(x_3) << " actual: " << vector_to_string(y_3) << " pred: " << vector_to_string(y_hat3) << endl;
+    cout << "input: " << vector_to_string(x_4) << " actual: " << vector_to_string(y_4) << " pred: " << vector_to_string(y_hat4) << endl;
+    
 }
 
 void fitness_func_xor_test() {
@@ -142,10 +195,10 @@ int main() {
     // Evolutionary Tests - post evolution tests
     p1.create_population("rand_connected"); 
     p1.show_pop();
-    p1.evolutionary_loop(X, Y);
+    p1.evolutionary_loop(X1, Y1);  // make sure this is the correct dataset either one-hot-encoding/single-output
 
     
-    forward_prop_single_example_xor_test();
+    forward_prop_single_example_xor_single_output();
     // p1.show_pop();
     // crossover_test();
 
