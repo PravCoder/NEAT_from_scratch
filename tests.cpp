@@ -37,7 +37,8 @@ int population_size = 150; // make sure even
 int network_inputs = 2;
 int network_outputs = 1;  // make sure this is set for one-hot-encoding/single-output xor
 double crossover_rate = 0.75;
-int num_generations = 200;
+int num_generations = 100
+;
 int tournament_size = 3;
 
 Population p1 = Population(population_size, network_inputs, network_outputs, crossover_rate, "fully_connected", num_generations, tournament_size); // rand_connnected, fully_connected
@@ -160,11 +161,25 @@ void forward_prop_single_example_xor_single_output() {
     vector<double> y_hat3 = genome.forward_propagate_single_example(x_3); 
     vector<double> y_hat4 = genome.forward_propagate_single_example(x_4); 
     
-    cout << "input: " << vector_to_string(x_1) << " actual: " << vector_to_string(y_1) << " pred: " << vector_to_string(y_hat1) << endl;
-    cout << "input: " << vector_to_string(x_2) << " actual: " << vector_to_string(y_2) << " pred: " << vector_to_string(y_hat2) << endl;
-
-    cout << "input: " << vector_to_string(x_3) << " actual: " << vector_to_string(y_3) << " pred: " << vector_to_string(y_hat3) << endl;
-    cout << "input: " << vector_to_string(x_4) << " actual: " << vector_to_string(y_4) << " pred: " << vector_to_string(y_hat4) << endl;
+    // Convert predictions to binary (0 or 1) and check correctness
+    int pred1 = (y_hat1[0] >= 0.5) ? 1 : 0;
+    int pred2 = (y_hat2[0] >= 0.5) ? 1 : 0;
+    int pred3 = (y_hat3[0] >= 0.5) ? 1 : 0;
+    int pred4 = (y_hat4[0] >= 0.5) ? 1 : 0;
+    
+    string mark1 = (pred1 == (int)y_1[0]) ? "✓" : "✗";
+    string mark2 = (pred2 == (int)y_2[0]) ? "✓" : "✗";
+    string mark3 = (pred3 == (int)y_3[0]) ? "✓" : "✗";
+    string mark4 = (pred4 == (int)y_4[0]) ? "✓" : "✗";
+    
+    cout << "input: " << vector_to_string(x_1) << " actual: " << vector_to_string(y_1) << " pred: " << vector_to_string(y_hat1)  << mark1 << endl;
+    cout << "input: " << vector_to_string(x_2) << " actual: " << vector_to_string(y_2) << " pred: " << vector_to_string(y_hat2)  << mark2 << endl;
+    cout << "input: " << vector_to_string(x_3) << " actual: " << vector_to_string(y_3) << " pred: " << vector_to_string(y_hat3) << mark3 << endl;
+    cout << "input: " << vector_to_string(x_4) << " actual: " << vector_to_string(y_4) << " pred: " << vector_to_string(y_hat4)  << mark4 << endl;
+    int correct_count = (pred1 == (int)y_1[0]) + (pred2 == (int)y_2[0]) + (pred3 == (int)y_3[0]) + (pred4 == (int)y_4[0]);
+    cout << "Accuracy: " << correct_count << "/4 correct (" << (correct_count * 25) << "%)" << endl;
+    
+    
     
 }
 
