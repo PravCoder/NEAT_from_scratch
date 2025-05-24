@@ -90,7 +90,7 @@ class Population {
                 for (int j=0; j<num_outputs; j++) {
                     int input_node_id = i; 
                     int output_node_id = num_inputs + j; // starts from last input-node-id
-                    double weight = get_random_uniform_weight();
+                    double weight = get_random_gaussian_weight();
                     int innov_num =  get_innovation_number(input_node_id, output_node_id);
                     genome.links.push_back(LinkGene(input_node_id, output_node_id, weight, true, innov_num));
                 }
@@ -117,7 +117,7 @@ class Population {
                     if ((double)rand() / RAND_MAX < connection_prob) {
                         int input_node_id = i;
                         int output_node_id = num_inputs+j;
-                        double weight = get_random_uniform_weight();
+                        double weight = get_random_gaussian_weight();
                         int innov_num =  get_innovation_number(input_node_id, output_node_id);
                         genome.links.push_back(LinkGene(input_node_id,output_node_id,weight,true, innov_num));
                     }
@@ -140,7 +140,7 @@ class Population {
                 // if cur-output-node doesnt have a connection to it, create a random connection to cur-output-node
                 if (has_connection == false) {
                     int input_node_id = genome.input_node_ids[rand() % genome.input_node_ids.size()];  // get a randomt input-node-id
-                    double weight = get_random_uniform_weight();  // get random weight
+                    double weight = get_random_gaussian_weight();  // get random weight
                     int innov_num = get_innovation_number(input_node_id, output_node_id); // get next innovation number for this new connection
                     // add this new link with  random-input-node-id and cur-output-node
                     genome.links.push_back(LinkGene(input_node_id, output_node_id, weight, true, innov_num));
@@ -153,6 +153,7 @@ class Population {
             cout << "Population size: " << population_size << endl;
             for (int i=0; i<population_size; i++) {
                 genomes[i].show();
+                cout << "   floating: " << genomes[i].has_floating_outputs() << endl;
             }
         }
 
@@ -275,7 +276,7 @@ class Population {
 
                 // create new connection mutation
                 int new_innovation_num = get_innovation_number(source_node.id, target_node.id);
-                double new_weight = get_random_uniform_weight();
+                double new_weight = get_random_gaussian_weight();
                 offspring.links.push_back(LinkGene(source_node.id, target_node.id, new_weight, true, new_innovation_num));
                 return;
 
@@ -329,7 +330,6 @@ class Population {
 
         void mutation_modify_weights(Genome& offspring, bool show_info) {
             Genome og_offspring = offspring; 
-            // if by change we recived a empty network, fill it up
             if (offspring.is_empty()) {
                 cerr << "empty network given to mutation - weight mutate" << endl;
                 initialize_first_gen_genome_randomly_connected(offspring);
@@ -337,23 +337,32 @@ class Population {
                 return;
             }
 
-            for (int i=0; i<offspring.links.size(); i++) {
+            for (int i = 0; i < offspring.links.size(); i++) {
                 double before_weight = offspring.links[i].weight;
-                double rand_weight = get_random_uniform_weight();
-                if (show_info) {
-                    cout << "before weight: " <<before_weight<< ", after weight: " << offspring.links[i].weight + rand_weight << endl;
+                
+                // 40% chance for complete replacement with large weight
+                if ((double)rand() / RAND_MAX < 0.4) {
+                    offspring.links[i].weight = get_random_gaussian_weight(0.0, 4.0);  // Even larger weights
+                } else {
+                    // 60% chance for adjustment
+                    double adjustment = get_random_gaussian_weight(0.0, 2.0);
+                    offspring.links[i].weight += adjustment;
                 }
-                offspring.links[i].weight = offspring.links[i].weight + rand_weight;
-                offspring.links[i].weight = std::max(-2.0, std::min(2.0, offspring.links[i].weight)); // map teh weight between range
+                
+                // REMOVE CLAMPING or make it much larger
+                // offspring.links[i].weight = std::max(-20.0, std::min(20.0, offspring.links[i].weight));
+                // Or remove clamping entirely - let weights grow as needed for XOR
+                
+                if (show_info) {
+                    cout << "before weight: " << before_weight << ", after weight: " << offspring.links[i].weight << endl;
+                }
             }
 
-            // check if this mutation created a empty network
-            if ((og_offspring.is_empty() == false) && (offspring.is_empty() == true) ) {
+            if ((og_offspring.is_empty() == false) && (offspring.is_empty() == true)) {
                 cerr << "empty network created by mutation - mutate weights" << endl;
             }
-            // cout << "after: " << endl;
-            // offspring.show();
         }
+
 
         /*
         Given X which is all the examples in your dataset, and Y which all the labels for your each example in X, and an genome-obj.
@@ -450,14 +459,15 @@ class Population {
             vector<Genome> selected_genomes;
 
             // number of genomes to select for reproduction, these genomes have to produce enough offsprings for next gen
-            int num_to_select = population_size;  
+            int num_to_select = max(3, population_size / 10);  // extreme selection pressure only top 10% reproduce
 
             for (int i=0; i<num_to_select; i++) {
                 int best_indx = rand() % population_size;
                 double cur_group_best_fitness = genomes[best_indx].fitness;
+                int effective_tournament_size = min(15, (int)genomes.size());  // larger tournament size for more pressure
                 
                 // create a group for cur-genome we need to select
-                for (int j=1; j<tournament_size; j++) {
+                for (int j=1; j<effective_tournament_size; j++) {
                     int indx = rand() % population_size; // random indx to select random genome for this group
                     if (genomes[indx].fitness > cur_group_best_fitness) {  // if cur-random-genome-selected-for-this-group 
                         best_indx = indx;
@@ -477,61 +487,55 @@ class Population {
         
         */
         vector<Genome> create_next_generation(vector<Genome>& selected_genomes) {
-            vector<Genome> next_generation_genomes;
+            vector<Genome> next_generation_genomes; // the genomes for next generation
             // create offpsrings by pairing selected networks
-            vector<pair<Genome, Genome>> parent_pairs = get_parent_pairs(selected_genomes);
-            // iterate all parent pairs that we selected for reproduction, for each create 2 new offsprings
-            cout << "parent pairs=" << parent_pairs.size() << endl;
-            for (int i=0; i<parent_pairs.size(); i++) {
-                pair<Genome, Genome>& cur_pair = parent_pairs[i];
-                Genome cur_offspring(num_inputs, num_outputs);
-                // apply crossover rate, if crossvoer create offsprings from cur-pair-parents, else clone genome with higher fitness
-                if ((double)rand() / RAND_MAX < crossover_rate) {
-                    cur_offspring = crossover_genomes(cur_pair.first, cur_pair.second);
-                } else {
-                    cur_offspring = (cur_pair.first.fitness > cur_pair.second.fitness) ? cur_pair.first : cur_pair.second;
-                }
-                // randomly choose which mutation to do after crossing over or cloning
-                if ((double)rand() / RAND_MAX < 0.8) {
-                    mutation_modify_weights(cur_offspring, false); // should modify reference
-                }
-                if ((double)rand() / RAND_MAX < 0.05) {
-                    // cout << "SUB7" << endl;
-                    mutation_add_node(cur_offspring, false);
-                }
-                if ((double)rand() / RAND_MAX < 0.1) {
-                    mutation_add_connection(cur_offspring);
-                }
+            // vector<pair<Genome, Genome>> parent_pairs = get_parent_pairs(selected_genomes);
 
-                if (cur_offspring.nodes.empty() || cur_offspring.links.empty()) {
-                    initialize_first_gen_genome_fully_connected(cur_offspring);
-                }
+            // since we select some parents, each needs to produce enough offpsrings
+            int num_offspring_per_parent = population_size / selected_genomes.size()+1; 
+            cout << "off per parent: "<< num_offspring_per_parent << endl;
 
-                cur_offspring.set_input_output_node_ids();
-                next_generation_genomes.push_back(cur_offspring);  // add offspring to new generation
-                // cout << "cur off: " << cur_pair.first.fitness << ", " << cur_pair.second.fitness << endl;
+            // iterate all parent-selected-genomes of this generation as long as we havent produced enough offpsrings for next gen
+            for (int parent_idx=0; parent_idx<selected_genomes.size() && next_generation_genomes.size() < population_size; parent_idx++) {
+                // iterate all child-offsprings of cur-parent as long as we havent produced enough offpsrings for next gen
+                for (int child=0; child<num_offspring_per_parent && next_generation_genomes.size() < population_size; child++) {
+                    Genome cur_offspring(num_inputs, num_outputs);
+                    
+                    
+                    // apply crossover rate, if crossover create offsprings from cur-pair-parents, else clone genome with higher fitness
+                    if ((double)rand() / RAND_MAX < crossover_rate && selected_genomes.size() > 1) {
+                        int other_parent_idx = rand() % selected_genomes.size();
+                        while (other_parent_idx == parent_idx && selected_genomes.size() > 1) {
+                            other_parent_idx = rand() % selected_genomes.size();
+                        }
+                        // randomlly choose another parent from selected genomes for crossover
+                        cur_offspring = crossover_genomes(selected_genomes[parent_idx], selected_genomes[other_parent_idx]);
+                    } else {
+                        // clone the parent, else of the crossover rate
+                        cur_offspring = selected_genomes[parent_idx];
+                    }
 
 
-                // Create SECOND offspring (swap parents for more diversity)
-                Genome offspring2(num_inputs, num_outputs);
-                if ((double)rand() / RAND_MAX < crossover_rate) {
-                    offspring2 = crossover_genomes(cur_pair.second, cur_pair.first); // Swap parents
-                } else {
-                    offspring2 = (cur_pair.second.fitness > cur_pair.first.fitness) ? cur_pair.second : cur_pair.first;
+                    // randomly choose which mutation to do after crossing over or cloning
+                    if ((double)rand() / RAND_MAX < 0.6) {
+                        mutation_modify_weights(cur_offspring, false); // should modify reference
+                    }
+                    if ((double)rand() / RAND_MAX < 0.05) {
+                        // cout << "SUB7" << endl;
+                        mutation_add_node(cur_offspring, false);
+                    }
+                    if ((double)rand() / RAND_MAX < 0.08) {
+                        mutation_add_connection(cur_offspring);
+                    }
+
+                    if (cur_offspring.nodes.empty() || cur_offspring.links.empty()) {
+                        initialize_first_gen_genome_fully_connected(cur_offspring);
+                    }
+
+                    cur_offspring.set_input_output_node_ids();
+                    next_generation_genomes.push_back(cur_offspring);  // add offspring to new generation
                 }
                 
-                // Apply mutations to second offspring
-                if ((double)rand() / RAND_MAX < 0.8) {
-                    mutation_modify_weights(offspring2, false);
-                }
-                if ((double)rand() / RAND_MAX < 0.05) {
-                    mutation_add_node(offspring2, false);
-                }
-                if ((double)rand() / RAND_MAX < 0.1) {
-                    mutation_add_connection(offspring2);
-                }
-                offspring2.set_input_output_node_ids();
-                next_generation_genomes.push_back(offspring2);
             }
             return next_generation_genomes;
 
@@ -613,10 +617,10 @@ class Population {
             return genomes[best_idx];
         }
 
-        double get_random_gaussian_weight(double mean=0.0, double stddev=0.2) {
-            static std::random_device rd;  // Seed
-            static std::mt19937 gen(rd()); // Mersenne Twister random number generator
-            std::normal_distribution<double> dist(mean, stddev); // Gaussian distribution
+        double get_random_gaussian_weight(double mean = 0.0, double stddev = 4.0) {  // cahnged from 0.1
+            static std::random_device rd;
+            static std::mt19937 gen(rd());
+            std::normal_distribution<double> dist(mean, stddev);
             return dist(gen);
         }
         double get_random_uniform_weight() {

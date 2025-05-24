@@ -33,14 +33,14 @@ string vector_to_string(const std::vector<double>& vec) {
 // int tournament_size = 2;
 
 // XOR Hyperparameters
-int population_size = 100; // make sure even
+int population_size = 150; // make sure even
 int network_inputs = 2;
 int network_outputs = 1;  // make sure this is set for one-hot-encoding/single-output xor
 double crossover_rate = 0.75;
 int num_generations = 200;
-int tournament_size = 4;
+int tournament_size = 3;
 
-Population p1 = Population(population_size, network_inputs, network_outputs, crossover_rate, "rand_connected", num_generations, tournament_size); // rand_connnected, fully_connected
+Population p1 = Population(population_size, network_inputs, network_outputs, crossover_rate, "fully_connected", num_generations, tournament_size); // rand_connnected, fully_connected
 vector<vector<double>> X = {
     {0, 0},  
     {0, 1},  
@@ -218,6 +218,7 @@ void test_manual_xor() {
     cout << "Manual network structure:" << endl;
     manual.show();
     manual.show_weights();
+    cout << "fitness: " << p1.compute_fitness_xor(X1, Y1, manual) << endl;
     
     // Test with detailed breakdown
     vector<vector<double>> inputs = {{0,0}, {0,1}, {1,0}, {1,1}};
@@ -257,15 +258,16 @@ int main() {
     // fitness_func_xor_test();
     
     // Evolutionary Tests - post evolution tests
-    // p1.create_population("rand_connected"); 
-    // p1.show_pop();
-    // p1.evolutionary_loop(X1, Y1);  // make sure this is the correct dataset either one-hot-encoding/single-output
-    // forward_prop_single_example_xor_single_output();
+    p1.create_population("rand_connected"); 
+    p1.show_pop();
+    // p1.genomes[0].show_weights();
+    p1.evolutionary_loop(X1, Y1);  // make sure this is the correct dataset either one-hot-encoding/single-output
+    forward_prop_single_example_xor_single_output();
     // p1.show_pop();
     // crossover_test();
 
 
-    test_manual_xor();
+    // test_manual_xor();
 
 
     return 0;
