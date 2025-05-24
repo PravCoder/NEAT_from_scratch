@@ -177,6 +177,70 @@ void fitness_func_xor_test() {
     cout << "fitness: " << genome.fitness  << endl;
 }
 
+
+/*
+This test is to manually create a netowrk that is the solution of XOR to test if everything else besides the evolution process is working
+*/
+void test_manual_xor() {
+    cout << "\n---Testing Manual XOR Network (Simplified)---" << endl;
+    
+    Genome manual(2, 1);  // 2 inputs, 1 output
+    
+    // Create nodes
+    manual.nodes.push_back(NodeGene(0, "input"));   // Input 1
+    manual.nodes.push_back(NodeGene(1, "input"));   // Input 2
+    manual.nodes.push_back(NodeGene(2, "hidden"));  // Hidden 1
+    manual.nodes.push_back(NodeGene(3, "hidden"));  // Hidden 2  
+    manual.nodes.push_back(NodeGene(4, "output"));  // Output
+    
+    // Classic XOR solution with well-tested weights
+    // This creates: Hidden1 = input1 OR input2, Hidden2 = input1 AND input2
+    // Output = Hidden1 AND NOT Hidden2 = XOR
+    
+    manual.links.push_back(LinkGene(0, 2, 6.0, true, 0));    // Input1 -> Hidden1 (OR gate part 1)
+    manual.links.push_back(LinkGene(1, 2, 6.0, true, 1));    // Input2 -> Hidden1 (OR gate part 2)
+    manual.links.push_back(LinkGene(0, 3, 6.0, true, 2));    // Input1 -> Hidden2 (AND gate part 1)
+    manual.links.push_back(LinkGene(1, 3, 6.0, true, 3));    // Input2 -> Hidden2 (AND gate part 2)
+    manual.links.push_back(LinkGene(2, 4, 6.0, true, 4));    // Hidden1 -> Output (positive)
+    manual.links.push_back(LinkGene(3, 4, -12.0, true, 5));  // Hidden2 -> Output (strong negative)
+    
+    // Set biases
+    manual.nodes[2].bias = -3.0;   // OR gate: activate when at least one input is high
+    manual.nodes[3].bias = -9.0;   // AND gate: activate only when both inputs are high
+    manual.nodes[4].bias = -3.0;   // Output bias
+    
+    // Set input/output node IDs
+    manual.set_input_output_node_ids();
+
+
+    
+    // Debug: Show intermediate activations
+    cout << "Manual network structure:" << endl;
+    manual.show();
+    manual.show_weights();
+    
+    // Test with detailed breakdown
+    vector<vector<double>> inputs = {{0,0}, {0,1}, {1,0}, {1,1}};
+    vector<int> expected = {0, 1, 1, 0};
+    
+    cout << "\nDetailed testing:" << endl;
+    for (int i = 0; i < inputs.size(); i++) {
+        vector<double> output = manual.forward_propagate_single_example(inputs[i]);
+        
+        // Show intermediate node activations for debugging
+        cout << "Input: [" << inputs[i][0] << "," << inputs[i][1] << "] ";
+        cout << "Hidden1: " << manual.nodes[2].activation << " ";
+        cout << "Hidden2: " << manual.nodes[3].activation << " ";
+        cout << "Output: " << output[0] << " ";
+        
+        int predicted = (output[0] >= 0.5) ? 1 : 0;
+        cout << "Predicted: " << predicted << " ";
+        cout << "Expected: " << expected[i] << " ";
+        cout << ((predicted == expected[i]) ? "✓" : "✗") << endl;
+    }
+}
+
+
 int main() {
     srand(time(NULL));
 
@@ -193,14 +257,15 @@ int main() {
     // fitness_func_xor_test();
     
     // Evolutionary Tests - post evolution tests
-    p1.create_population("rand_connected"); 
-    p1.show_pop();
-    p1.evolutionary_loop(X1, Y1);  // make sure this is the correct dataset either one-hot-encoding/single-output
-
-    
-    forward_prop_single_example_xor_single_output();
+    // p1.create_population("rand_connected"); 
+    // p1.show_pop();
+    // p1.evolutionary_loop(X1, Y1);  // make sure this is the correct dataset either one-hot-encoding/single-output
+    // forward_prop_single_example_xor_single_output();
     // p1.show_pop();
     // crossover_test();
+
+
+    test_manual_xor();
 
 
     return 0;

@@ -279,6 +279,8 @@ class Genome {
         }
 
         double sigmoid(double z) {
+            if (z > 500) return 1.0;  // Prevent overflow
+            if (z < -500) return 0.0;
             return 1.0 / (1.0 + exp(-z));
         }
 
