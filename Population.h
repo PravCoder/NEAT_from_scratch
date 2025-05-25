@@ -352,6 +352,11 @@ class Population {
                 // REMOVE CLAMPING or make it much larger
                 // offspring.links[i].weight = std::max(-20.0, std::min(20.0, offspring.links[i].weight));
                 // Or remove clamping entirely - let weights grow as needed for XOR
+
+                // Optional: prevent crazy large weights
+                if (abs(offspring.links[i].weight) >= 100.0) {
+                    offspring.links[i].weight = get_random_gaussian_weight(0.0, 10.0);
+                }
                 
                 if (show_info) {
                     cout << "before weight: " << before_weight << ", after weight: " << offspring.links[i].weight << endl;
