@@ -211,7 +211,7 @@ class Genome {
                     //     << endl;
                 }
                 weighted_sum += cur_node.bias;  // add bias
-                cur_node.activation = sigmoid(weighted_sum); // set activation of weighted-sum as activation of cur-node
+                cur_node.activation = sigmoid_stable(weighted_sum); // set activation of weighted-sum as activation of cur-node
                 // cout << "Node " << cur_node.id << " weighted_sum: " << weighted_sum << ", activation: " << sigmoid(weighted_sum) << endl;
             }
 
@@ -245,7 +245,7 @@ class Genome {
                     //     << endl;
                 }
                 weighted_sum += cur_node.bias;  // add bias
-                cur_node.activation = sigmoid(weighted_sum); // set activation of weighted-sum as activation of cur-node
+                cur_node.activation = sigmoid_stable(weighted_sum); // set activation of weighted-sum as activation of cur-node
                 // cout << "Node " << cur_node.id << " weighted_sum: " << weighted_sum << ", activation: " << sigmoid(weighted_sum) << endl;
             }
 
@@ -282,6 +282,11 @@ class Genome {
             if (z > 500) return 1.0;  // Prevent overflow
             if (z < -500) return 0.0;
             return 1.0 / (1.0 + exp(-z));
+        }
+
+        double sigmoid_stable(double z) {
+            z = std::max(-50.0, std::min(50.0, z));  // clamp to reasonable range, maps tanh [-1,1] to [0,1]
+            return (tanh(z/2.0) + 1.0) / 2.0;
         }
 
         void show() {

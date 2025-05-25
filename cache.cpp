@@ -1,3 +1,5 @@
+// THIS FILE IS JUST TRASH
+
 #ifndef POPULATION_H
 #define POPULATION_H
 

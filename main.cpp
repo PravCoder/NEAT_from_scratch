@@ -1,7 +1,7 @@
 #include <iostream>
 using namespace std;
 #include "Population.h" 
-
+// go to test.cpp on how to run 
 int main() {
 
 }
