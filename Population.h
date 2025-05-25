@@ -380,23 +380,46 @@ class Population {
             }
 
             double total_error = 0.0;
+            int correct_binary_predictions = 0;
             
             for (int i=0; i<X.size(); i++) {   // iterate every example
                 vector<double> cur_example = X[i];  // get cur-example inputs
                 vector<double> prediction_cur_example = genome.forward_propagate_single_example(cur_example); // pass cur-example-inputs into network get predictions vector for output nodes
                 
-                double example_error = 0.0;  // error of current example
-                for (int j=0; j<prediction_cur_example.size(); j++) {          // iterate all predictions so for each output node
+                double example_error = 0.0;  // // continuous error for current example
+                int example_correct_predictions = 0; // binary accuracy for current example, number of correct output node preds
+
+                for (int j=0; j<prediction_cur_example.size(); j++) {          // iterate all predictions so iterate for each output node
+                    // Continous error calculation
                     double error = prediction_cur_example[j] - Y[i][j];            // compute error of current output node, add to total-example-error
                     example_error += error*error; 
+
+                    // Binary accuracy calculation for each output node (in this case 1 output node)
+                    int binary_pred = (prediction_cur_example[j] >= 0.5) ? 1 : 0;    // get 1/0 prediction rounding output node percentage
+                    int binary_expected = (int)Y[i][j];         // get the label
+                    // check if hte binary prediciton matches the binary label, if so its a correct prediction
+                    if (binary_pred == binary_expected) { 
+                        example_correct_predictions++;
+                    }
+                }
+                // add continous error for this example to total error
+                total_error += example_error;
+
+                // Count this example as correct only if ALL output nodes are correct
+                if (example_correct_predictions == Y[0].size()) {
+                    correct_binary_predictions++;
                 }
 
-                total_error += example_error;  // add total-example-error to total error after computing error of cur-example
+                
             }
 
-            double fitness = 1.0 / (1.0 + total_error); // convert error across all examples into fitness value
-            genome.fitness = fitness;
-            return fitness;
+            double continuous_fitness = 1.0 / (1.0 + total_error);  // compute continous fitness across all examples
+            double binary_accuracy = (double)correct_binary_predictions / X.size(); // compute binary acc across all examples
+            // combine both weight binary accuracy heavily for classification
+            double combined_fitness = 0.3 * continuous_fitness + 0.7 * binary_accuracy;
+
+            genome.fitness = combined_fitness;
+            return combined_fitness;
         }
 
         /*
