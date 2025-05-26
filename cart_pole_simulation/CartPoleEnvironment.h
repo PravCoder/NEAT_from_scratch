@@ -1,3 +1,35 @@
+#include <cmath>
+#include <random>
+#include <iostream>
+#include <vector>
 #ifndef CartPoleEnvironment_H
 #define CartPoleEnvironment_H
 
+
+class CartPoleEnvironment {
+    private:
+        static constexpr double GRAVITY = 9.8;             // m/s^2, pulls pole down
+        static constexpr double MASS_CART = 1.0;           // kg, heavier cart -> harder to accelerate
+        static constexpr double MASS_POLE = 0.1;           // kg, how heavy the pole is lighter the pole eaiser to controll but less momentum
+        static constexpr double TOTAL_MASS = MASS_CART + MASS POLE;   // kg, combined mass of both elements
+        static constexpr double LENGTH = 0.5;                         // m, half of poles length
+        static constexpr double POLE_MASS_LENGTH = MASS_POLE * LENGTH;  // kg * m, mass*distance = moment of inertia component
+        static constexpr double FORCE_MAG = 10.0;          // N, how hard each push of the cart is. 
+        static constexpr double TAU = 0.02;                // s, time between each physics update, time step, 0.02s = 50z, 50 times per second.  
+
+        static constexpr double X_BOUNDS = 2.4;      // m, how far cart can travel from center before failure, x-bounds
+        static constexpr double THETA_THRESHOLD_RADIANS = 12.0 * 2.0 * M_PI / 360;  // radians, maximum pole tilt allowed before failure,  12° × (2π/360°) = 0.2094 radians, if pole tilts more than 12 degrees its fallen
+    
+    public:
+        // network inputs
+        // these variables represent the current values in the simulation environment of the current genome that is being evaluated
+        double cart_x;       // m, how far cart is form center, carts x-position
+        double x_vel;        // m/s, carts velocity how fast the cart is moving horizontally, pos->right, neg->left
+        double pole_angle;       // radians, how much pole has tilted from y-axis
+        double pole_angular_vel; // radians, poles angular velocity, how fast pole is rotating. 
+        
+        int steps_survived;  // number of time steps the current pole has stayed balanced
+        bool done;           // whather the episode has ended
+
+
+}
