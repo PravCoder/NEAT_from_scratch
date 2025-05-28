@@ -90,7 +90,7 @@ class CartPoleEnvironment {
             // Pole falls too far left
             // Pole falls too far right
             // time limit exceeded
-            done = (cart_x < -X_THRESHOLD || cart_x > X_THRESHOLD ||
+            done = (cart_x < -X_BOUNDS || cart_x > X_BOUNDS ||
                 pole_angle < -THETA_THRESHOLD_RADIANS || pole_angle > THETA_THRESHOLD_RADIANS ||
                 steps_survived >= 500);  
         }
@@ -118,7 +118,7 @@ class CartPoleEnvironment {
                 state[0] / X_BOUNDS,       // cart position / max-position
                 state[1] / 3.0,       // cart vel rough normalization
                 state[2] / (12.0 * M_PI / 180.0),   // pole angle / max-angle
-                state[3] / 2.0;      // angular vel  rough normalization
+                state[3] / 2.0       // angular vel  rough normalization
             }
         }
 
@@ -153,6 +153,14 @@ class CartPoleEnvironment {
         }
 
 
+        void run_cartpole_neat_evolution(int population_size, int network_inputs, int network_outputs, double crossover_rate, int num_generations, int tournament_size) {
+            Population p1 = Population(population_size, network_inputs, network_outputs, crossover_rate, "fully_connected", num_generations, tournament_size); // rand_connnected, fully_connected
+            p1.create_population("fully_connected");
+
+
+            p1.evolutionary_loop_cartpole();
+
+        }
 
 
 }

@@ -8,6 +8,7 @@
 #include <map>
 #include <algorithm> 
 #include <random>  
+#include "CartPoleEnvironment.h"  // need evaluate_genome_cart_pole_simulation() func which is in this file
 
 
 /*
@@ -424,6 +425,7 @@ class Population {
 
         /*
         Loop to compute fitness and create next generation of genomes based on best performing genoms of previous population.
+        for XOR
         */
         void evolutionary_loop(vector<vector<double>> X, vector<vector<double>> Y) {
             // create_population(initializer);  // if its the first generation create initial population
@@ -567,6 +569,35 @@ class Population {
             }
             return next_generation_genomes;
 
+        }
+
+        void evolutionary_loop_cartpole() {
+            for (int cur_gen=0; cur_gen < num_generations; cur_gen++) {
+                cout << "=== Generation #"<< cur_gen << "===" << endl;
+
+                double best_fitness = 0.0;
+                double avr_fitness = 0.0;
+
+                for (int i=0; i<genomes.size(); i++) {
+                    CartPoleEnvironment env;   // create a new cartpole-obj which is correct appeaoch because it resets everything to fresh env, and runs multiple episodes
+                    double fitness = env.evaluate_genome_cart_pole_simulation(geomes[i], 5);
+                    genomes[i].fitness = fitness;
+
+                    best_fitness = max(best_fitness, fitness);
+                    avr_fitness += fitness;
+                }
+
+                avr_fitness /= genomes.size();
+                cout << "best fitness: " << best_fitness << endl;
+                cout << "avr fitness: " << avg_fitness << endl;
+
+
+                vector<Genome> selected = select_best_networks_tournament();
+                vector<Genome> next_gen = create_next_generation(selected);
+                genomes.clear();
+                genomes = next_gen;
+                population_size = genomes.size();
+            }
         }
     
         vector<pair<Genome, Genome>> get_parent_pairs(vector<Genome>& selected_genomes) {  
