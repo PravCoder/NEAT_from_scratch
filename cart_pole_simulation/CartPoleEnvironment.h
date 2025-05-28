@@ -51,5 +51,43 @@ class CartPoleEnvironment {
             done = false; 
         }
 
+        void step(int action) {
+            if (done) {
+                return 0.0;
+            }
+
+            // action: 0 = push left, 1 = push right
+            double force = (action == 1) ? FORCE_MAG : -FORCE_MAG;
+
+
+            // cart-pole equations
+            double costheta = cos(pole_angle);
+            double sintheta = sin(pole_angle);
+            double temp = (force + POLE_MASS_LENGTH * pole_angular_vel * pole_angular_vel * sintheta) / TOTAL_MASS;
+            double thetaacc = (GRAVITY * sintheta - costheta * temp) / 
+                            (LENGTH * (4.0/3.0 - MASS_POLE * costheta * costheta / TOTAL_MASS));
+            double xacc = temp - POLE_MASS_LENGTH * thetaacc * costheta / TOTAL_MASS;
+
+
+            // update environment state using euler integration
+            cart_x += TAU * x_vel;
+            x_vel += TAU * xacc;
+            pole_angle += TAU * pole_angular_vel;
+            pole_angular_vel += TAU * thetaacc;
+
+            steps_survied++;  // we just completeed updated a step so increment step survived
+
+
+            // This checks if the episode is terminated, checks the failure conditions if any is true this episode has ended the genome as failed the simulation
+            // Cart falls of left side
+            // Cart falls off right side
+            // Pole falls too far left
+            // Pole falls too far right
+            // time limit exceeded
+            done = (cart_x < -X_THRESHOLD || cart_x > X_THRESHOLD ||
+                pole_angle < -THETA_THRESHOLD_RADIANS || pole_angle > THETA_THRESHOLD_RADIANS ||
+                steps_survived >= 500);  
+        }
+
 
 }
