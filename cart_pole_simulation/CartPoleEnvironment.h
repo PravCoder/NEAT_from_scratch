@@ -69,7 +69,7 @@ class CartPoleEnvironment {
             double xacc = temp - POLE_MASS_LENGTH * thetaacc * costheta / TOTAL_MASS;
 
 
-            // update environment state using euler integration
+            // update environment state using euler integrations
             cart_x += TAU * x_vel;
             x_vel += TAU * xacc;
             pole_angle += TAU * pole_angular_vel;
