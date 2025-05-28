@@ -107,5 +107,14 @@ class CartPoleEnvironment {
             return done;  // returns if the current genomes current episode has finished
         }
 
+        vector<double> noramlize_state(vector<double>& state) {
+            return {
+                state[0] / X_BOUNDS,       // cart position / max-position
+                state[1] / 3.0,       // cart vel rough normalization
+                state[2] / (12.0 * M_PI / 180.0),   // pole angle / max-angle
+                state[3] / 2.0;      // angular vel  rough normalization
+            }
+        }
+
 
 }
