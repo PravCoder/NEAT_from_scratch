@@ -28,7 +28,7 @@ class CartPoleEnvironment {
         double pole_angle;       // radians, how much pole has tilted from y-axis
         double pole_angular_vel; // radians, poles angular velocity, how fast pole is rotating. 
         
-        int steps_survived;  // number of time steps the current pole has stayed balanced
+        int steps_survived;  // number of time steps the current cart-genome current episode has kept the pole balanced
         bool done;           // whather the episode has ended
 
 
@@ -87,6 +87,24 @@ class CartPoleEnvironment {
             done = (cart_x < -X_THRESHOLD || cart_x > X_THRESHOLD ||
                 pole_angle < -THETA_THRESHOLD_RADIANS || pole_angle > THETA_THRESHOLD_RADIANS ||
                 steps_survived >= 500);  
+        }
+
+        vector<double> get_state() {  // get the current state of the environment
+            return {cart_x, cart_vel, pole_angle, pole_angular_vel};
+        }
+
+        double get_fitness() {
+            return static_cast<double>(steps_survived); // number of step of current episode of current genome
+        }
+
+        void print_state() const {
+            cout << "Cart: x=" << x << " v=" << x_dot 
+                    << " | Pole: θ=" << theta << " ω=" << theta_dot 
+                    << " | Steps=" << steps_survived << endl;
+        }
+
+        bool is_done {
+            return done;  // returns if the current genomes current episode has finished
         }
 
 
