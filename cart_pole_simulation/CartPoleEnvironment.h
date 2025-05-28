@@ -116,5 +116,15 @@ class CartPoleEnvironment {
             }
         }
 
+        
+        // Given a genome and the state of the environment (input vars) get action of genome-network
+        int get_action_from_genome(Genome& genome, const vector<double>& state) {
+            vector<double> normalized_state = normalize_state(state);  // normalize state
+            vector<double> outputs = genome.forward_propagate_single_example(normalized_state);
+
+            // convert network single output node percentage ot action, >0.5 = right=1, <0.5 = left=0
+            return (outputs[0] > 0.5) ? 1 : 0;
+        }
+
 
 }
