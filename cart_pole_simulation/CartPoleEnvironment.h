@@ -32,4 +32,24 @@ class CartPoleEnvironment {
         bool done;           // whather the episode has ended
 
 
+        /*
+        For ecah genomes episode we call this func, it randomly sets the starting conditions of the environment
+        This is so the simulation doesn't start in the perfect balance case, so it is tested on all cases
+        */
+        void reset() {
+            // init small random values
+            static std::random_device rd;
+            static std::mt19937 gen(rd());
+            std::uniform_real_distribution<double> dist(-0.05, 0.05);
+
+            cart_x = dist(gen);            // ex.  Cart slightly off-center (3cm)
+            x_vel = dist(gen);             // ex.  Cart moving slowly left  
+            pole_angle = dist(gen);        // ex.   Pole tilted 2.3° right
+            pole_angular_vel = dist(gen);  // ex.  Pole rotating slightly left, is how the simulation starts adn genome has to control the cart from here given these inputs in the environment
+
+            steps_survived = 0;
+            done = false; 
+        }
+
+
 }
