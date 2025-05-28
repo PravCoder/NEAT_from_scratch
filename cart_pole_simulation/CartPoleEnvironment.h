@@ -4,6 +4,8 @@
 #include <vector>
 #ifndef CartPoleEnvironment_H
 #define CartPoleEnvironment_H
+#include "Population.h"  /
+#include "Genome.h" 
 
 
 class CartPoleEnvironment {
@@ -31,9 +33,13 @@ class CartPoleEnvironment {
         int steps_survived;  // number of time steps the current cart-genome current episode has kept the pole balanced
         bool done;           // whather the episode has ended
 
+        CartPoleEnvironment() {
+            reset();
+        }
+
 
         /*
-        For ecah genomes episode we call this func, it randomly sets the starting conditions of the environment
+        For each genomes episode we call this func, it randomly sets the starting conditions of the environment
         This is so the simulation doesn't start in the perfect balance case, so it is tested on all cases
         */
         void reset() {
@@ -125,6 +131,28 @@ class CartPoleEnvironment {
             // convert network single output node percentage ot action, >0.5 = right=1, <0.5 = left=0
             return (outputs[0] > 0.5) ? 1 : 0;
         }
+
+        // Given a genome we inject into the simulation environment and see how well it does, num of episodes is how many times we run that genome against the simulation environment
+        double evaluate_genome_cart_pole_simulation(Genome& genome, int max_episodes=5) {
+            double total_fitness = 0.0;
+
+            // iterate all episodes we want to run on this genome to get its average performance on the environment
+            for (int cur_episode; cur_episode<max_episodes; cur_episode++) {
+                reset();  // sets the starting conditions randomly (why we need multiple episodes), sets steps-survived=0
+
+                // while is episode simulation is not done
+                while (!is_done()) {
+                    vector<double> state = get_state();  // get the current state of the environment at the current time step
+                    int action = get_action_from_genome(genome, state);  // get prediction-action from genome given state of environment
+                    step(action);                                        // given genomes action move the environment into the next step
+                }
+                total_fitness += get_fitness();  // sum fitness of current episode and average it for robust performance metric
+            }
+
+            return total_fitness / max_episodes;
+        }
+
+
 
 
 }
