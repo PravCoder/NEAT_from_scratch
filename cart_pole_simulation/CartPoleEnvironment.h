@@ -4,8 +4,9 @@
 #include <vector>
 #ifndef CartPoleEnvironment_H
 #define CartPoleEnvironment_H
-#include "Population.h"  /
-#include "Genome.h" 
+#include "../Population.h"   
+#include "../Genome.h"
+using namespace std;
 
 
 class CartPoleEnvironment {
@@ -13,7 +14,7 @@ class CartPoleEnvironment {
         static constexpr double GRAVITY = 9.8;             // m/s^2, pulls pole down
         static constexpr double MASS_CART = 1.0;           // kg, heavier cart -> harder to accelerate
         static constexpr double MASS_POLE = 0.1;           // kg, how heavy the pole is lighter the pole eaiser to controll but less momentum
-        static constexpr double TOTAL_MASS = MASS_CART + MASS POLE;   // kg, combined mass of both elements
+        static constexpr double TOTAL_MASS = MASS_CART + MASS_POLE;   // kg, combined mass of both elements
         static constexpr double LENGTH = 0.5;                         // m, half of poles length
         static constexpr double POLE_MASS_LENGTH = MASS_POLE * LENGTH;  // kg * m, mass*distance = moment of inertia component
         static constexpr double FORCE_MAG = 10.0;          // N, how hard each push of the cart is. 
@@ -57,7 +58,7 @@ class CartPoleEnvironment {
             done = false; 
         }
 
-        void step(int action) {
+        double step(int action) {
             if (done) {
                 return 0.0;
             }
@@ -81,7 +82,7 @@ class CartPoleEnvironment {
             pole_angle += TAU * pole_angular_vel;
             pole_angular_vel += TAU * thetaacc;
 
-            steps_survied++;  // we just completeed updated a step so increment step survived
+            steps_survived++;  // we just completeed updated a step so increment step survived
 
 
             // This checks if the episode is terminated, checks the failure conditions if any is true this episode has ended the genome as failed the simulation
@@ -93,10 +94,12 @@ class CartPoleEnvironment {
             done = (cart_x < -X_BOUNDS || cart_x > X_BOUNDS ||
                 pole_angle < -THETA_THRESHOLD_RADIANS || pole_angle > THETA_THRESHOLD_RADIANS ||
                 steps_survived >= 500);  
+
+            return done ? 0.0 : 1.0; 
         }
 
-        vector<double> get_state() {  // get the current state of the environment
-            return {cart_x, cart_vel, pole_angle, pole_angular_vel};
+        vector<double> get_state() const {  // get the current state of the environment
+            return {cart_x, x_vel, pole_angle, pole_angular_vel};
         }
 
         double get_fitness() {
@@ -104,22 +107,22 @@ class CartPoleEnvironment {
         }
 
         void print_state() const {
-            cout << "Cart: x=" << x << " v=" << x_dot 
-                    << " | Pole: θ=" << theta << " ω=" << theta_dot 
+            cout << "Cart: x=" << cart_x << " v=" << x_vel 
+                    << " | Pole: θ=" << pole_angle << " ω=" << pole_angular_vel 
                     << " | Steps=" << steps_survived << endl;
         }
 
-        bool is_done {
+        bool is_done() const {
             return done;  // returns if the current genomes current episode has finished
         }
 
-        vector<double> noramlize_state(vector<double>& state) {
+        vector<double> normalize_state(const vector<double>& state) const {
             return {
                 state[0] / X_BOUNDS,       // cart position / max-position
                 state[1] / 3.0,       // cart vel rough normalization
                 state[2] / (12.0 * M_PI / 180.0),   // pole angle / max-angle
                 state[3] / 2.0       // angular vel  rough normalization
-            }
+            };
         }
 
         
@@ -137,7 +140,7 @@ class CartPoleEnvironment {
             double total_fitness = 0.0;
 
             // iterate all episodes we want to run on this genome to get its average performance on the environment
-            for (int cur_episode; cur_episode<max_episodes; cur_episode++) {
+            for (int cur_episode=0; cur_episode<max_episodes; cur_episode++) {
                 reset();  // sets the starting conditions randomly (why we need multiple episodes), sets steps-survived=0
 
                 // while is episode simulation is not done
@@ -163,4 +166,6 @@ class CartPoleEnvironment {
         }
 
 
-}
+};
+
+#endif

@@ -8,7 +8,7 @@
 #include <map>
 #include <algorithm> 
 #include <random>  
-#include "CartPoleEnvironment.h"  // need evaluate_genome_cart_pole_simulation() func which is in this file
+#include "cart_pole_simulation/CartPoleEnvironment.h"  // need evaluate_genome_cart_pole_simulation() func which is in this file
 
 
 /*
@@ -580,7 +580,7 @@ class Population {
 
                 for (int i=0; i<genomes.size(); i++) {
                     CartPoleEnvironment env;   // create a new cartpole-obj which is correct appeaoch because it resets everything to fresh env, and runs multiple episodes
-                    double fitness = env.evaluate_genome_cart_pole_simulation(geomes[i], 5);
+                    double fitness = env.evaluate_genome_cart_pole_simulation(genomes[i], 5);
                     genomes[i].fitness = fitness;
 
                     best_fitness = max(best_fitness, fitness);
@@ -589,7 +589,7 @@ class Population {
 
                 avr_fitness /= genomes.size();
                 cout << "best fitness: " << best_fitness << endl;
-                cout << "avr fitness: " << avg_fitness << endl;
+                cout << "avr fitness: " << avr_fitness << endl;
 
 
                 vector<Genome> selected = select_best_networks_tournament();
