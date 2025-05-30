@@ -523,7 +523,7 @@ class Population {
 
             // since we select some parents, each needs to produce enough offpsrings
             int num_offspring_per_parent = population_size / selected_genomes.size()+1; 
-            cout << "off per parent: "<< num_offspring_per_parent << endl;
+            cout << "offspring per parent: "<< num_offspring_per_parent << endl;
 
             // iterate all parent-selected-genomes of this generation as long as we havent produced enough offpsrings for next gen
             for (int parent_idx=0; parent_idx<selected_genomes.size() && next_generation_genomes.size() < population_size; parent_idx++) {

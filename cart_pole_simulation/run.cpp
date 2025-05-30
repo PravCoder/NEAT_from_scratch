@@ -5,16 +5,22 @@ using namespace std;
 #include <sstream>
 
 int main() {
+    srand(time(NULL)); 
+
     int population_size = 150; // make sure even
-    int network_inputs = 2;
+    int network_inputs = 4;
     int network_outputs = 1;  // make sure this is set for one-hot-encoding/single-output xor
     double crossover_rate = 0.75;
     int num_generations = 100;
     int tournament_size = 3;
 
 
-    CartPoleEnvironment env;
-    env.run_cartpole_neat_evolution(population_size, network_inputs, network_outputs, crossover_rate, num_generations, tournament_size);
+    // runs the cart-pole neat evolution
+    Population p1 = Population(population_size, network_inputs, network_outputs, crossover_rate, "fully_connected", num_generations, tournament_size); // rand_connnected, fully_connected
+    p1.create_population("fully_connected");
+    p1.evolutionary_loop_cartpole();
+
+    
 }
 
 

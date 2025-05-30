@@ -4,7 +4,7 @@
 #include <vector>
 #ifndef CartPoleEnvironment_H
 #define CartPoleEnvironment_H
-#include "../Population.h"   
+// #include "../Population.h"   dont need cause it causes circular dependecy
 #include "../Genome.h"
 using namespace std;
 
@@ -156,14 +156,6 @@ class CartPoleEnvironment {
         }
 
 
-        void run_cartpole_neat_evolution(int population_size, int network_inputs, int network_outputs, double crossover_rate, int num_generations, int tournament_size) {
-            Population p1 = Population(population_size, network_inputs, network_outputs, crossover_rate, "fully_connected", num_generations, tournament_size); // rand_connnected, fully_connected
-            p1.create_population("fully_connected");
-
-
-            p1.evolutionary_loop_cartpole();
-
-        }
 
 
 };
