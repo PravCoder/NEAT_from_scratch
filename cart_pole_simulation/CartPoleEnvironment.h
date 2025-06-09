@@ -103,7 +103,7 @@ class CartPoleEnvironment {
         }
 
         double get_fitness() {
-            return static_cast<double>(steps_survived); // number of step of current episode of current genome
+            return static_cast<double>(steps_survived); // fitness of current episode is just the number of steps it survived
         }
 
         void print_state() const {
@@ -149,10 +149,10 @@ class CartPoleEnvironment {
                     int action = get_action_from_genome(genome, state);  // get prediction-action from genome given state of environment
                     step(action);                                        // given genomes action move the environment into the next step
                 }
-                total_fitness += get_fitness();  // sum fitness of current episode and average it for robust performance metric
+                total_fitness += get_fitness();  // sum fitness of all episodes and average it for robust performance metric
             }
 
-            return total_fitness / max_episodes;
+            return total_fitness / max_episodes;  // average fitness across all episodes
         }
 
 

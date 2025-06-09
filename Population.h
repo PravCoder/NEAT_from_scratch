@@ -572,13 +572,13 @@ class Population {
         }
 
         void evolutionary_loop_cartpole() {
-            for (int cur_gen=0; cur_gen < num_generations; cur_gen++) {
-                cout << "=== Generation #"<< cur_gen << "===" << endl;
+            for (int cur_gen=0; cur_gen < num_generations; cur_gen++) {  // iterate all generations
+                cout << "===== Generation #"<< cur_gen << "=====" << endl;
 
                 double best_fitness = 0.0;
                 double avr_fitness = 0.0;
 
-                for (int i=0; i<genomes.size(); i++) {
+                for (int i=0; i<genomes.size(); i++) {  // iterate all genomes in pop and compute fitness in cart-pole-environment
                     CartPoleEnvironment env;   // create a new cartpole-obj which is correct appeaoch because it resets everything to fresh env, and runs multiple episodes
                     double fitness = env.evaluate_genome_cart_pole_simulation(genomes[i], 5);
                     genomes[i].fitness = fitness;
@@ -592,8 +592,8 @@ class Population {
                 cout << "avr fitness: " << avr_fitness << endl;
 
 
-                vector<Genome> selected = select_best_networks_tournament();
-                vector<Genome> next_gen = create_next_generation(selected);
+                vector<Genome> selected = select_best_networks_tournament();  // select the best networks for reproduction
+                vector<Genome> next_gen = create_next_generation(selected);  // produce offsprings for the next generation
                 genomes.clear();
                 genomes = next_gen;
                 population_size = genomes.size();
